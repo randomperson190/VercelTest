@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Argentina Finanzas</title>
-
   <link rel="icon" href="https://flagcdn.com/w40/ar.png">
 
   <style>
@@ -16,7 +15,6 @@
       align-items: center;
       height: 100vh;
       margin: 0;
-      text-align: left;
     }
 
     .container {
@@ -55,7 +53,7 @@
           `• Inflación (Mes de ${mesNombre}): ${ultimo.valor}%`;
       });
 
-    // 🔹 Dólar Blue (último)
+    // 🔹 Dólar Blue (último correcto)
     fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares")
       .then(res => res.json())
       .then(data => {
@@ -68,33 +66,42 @@
           `• Dólar Blue (Compra): $${blue.compra}`;
       });
 
-    // 🔹 RIPTE (scraping)
-fetch("https://www.argentina.gob.ar/trabajo/seguridadsocial/ripte")
-  .then(res => res.text())
-  .then(html => {
+    // 🔹 RIPTE con debug completo
+    fetch("https://www.argentina.gob.ar/trabajo/seguridadsocial/ripte", {
+      headers: {
+        "User-Agent": "Mozilla/5.0"
+      }
+    })
+      .then(res => res.text())
+      .then(html => {
 
-    let m = html.match(/h3">\$?\s*([0-9]+(?:\.[0-9]{3})*,[0-9]{2})/);
-    if (!m) throw "No encontré monto RIPTE";
+        console.log("HTML RIPTE:");
+        console.log(html);
 
-    let valorStr = m[1];
+        // Regex que estás usando
+        let m = html.match(/\$\s*([0-9]+(?:\.[0-9]{3})*,[0-9]{2})/);
 
-    let ripte = parseFloat(
-      valorStr
-        .replace(/\./g, "")
-        .replace(",", ".")
-    );
+        console.log("Resultado regex:", m);
 
-    // 👉 acá usás el elemento (tiene que existir en el HTML)
-    document.getElementById("ripte").innerText =
-      `• RIPTE (Remuneración Imponible Promedio de los Trabajadores Estables): $${ripte}`;
+        if (!m) throw "No encontré monto RIPTE";
 
-  })
-  .catch(err => {
-    console.error(err);
-    document.getElementById("ripte").innerText =
-      "• RIPTE: Error obteniendo dato";
-  });
+        let valorStr = m[1];
 
+        let ripte = parseFloat(
+          valorStr
+            .replace(/\./g, "")
+            .replace(",", ".")
+        );
+
+        document.getElementById("ripte").innerText =
+          `• RIPTE (Remuneración Imponible Promedio de los Trabajadores Estables): $${ripte.toLocaleString("es-AR")}`;
+      })
+      .catch(err => {
+        console.error("ERROR RIPTE:", err);
+
+        document.getElementById("ripte").innerText =
+          "• RIPTE: Error obteniendo dato";
+      });
   </script>
 
 </body>
