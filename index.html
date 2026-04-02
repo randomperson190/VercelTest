@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Inflación Argentina</title>
+  <title>Indicadores Argentina</title>
+
+  <link rel="icon" href="https://flagcdn.com/w40/ar.png">
 
   <style>
     body {
@@ -16,28 +18,34 @@
       margin: 0;
     }
 
+    .container {
+      display: flex;
+      gap: 30px;
+    }
+
     .card {
       background: #1e293b;
-      padding: 40px;
+      padding: 30px;
       border-radius: 20px;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      min-width: 250px;
     }
 
     .title {
-      font-size: 24px;
-      margin-bottom: 20px;
+      font-size: 18px;
       color: #94a3b8;
+      margin-bottom: 10px;
     }
 
     .value {
-      font-size: 48px;
+      font-size: 36px;
       font-weight: bold;
       color: #38bdf8;
     }
 
-    .date {
-      margin-top: 10px;
+    .sub {
+      margin-top: 5px;
       font-size: 14px;
       color: #94a3b8;
     }
@@ -46,24 +54,57 @@
 
 <body>
 
-  <div class="card">
-    <div class="title">Última inflación</div>
-    <div id="inflacion" class="value">Cargando...</div>
-    <div id="fecha" class="date"></div>
+  <div class="container">
+    
+    <!-- Inflación -->
+    <div class="card">
+      <div class="title">Último dato de inflación</div>
+      <div id="inflacion" class="value">Cargando...</div>
+      <div id="mes" class="sub"></div>
+    </div>
+
+    <!-- Dólar Blue -->
+    <div class="card">
+      <div class="title">Dólar Blue</div>
+      <div id="compra" class="value">-</div>
+      <div id="venta" class="value">-</div>
+      <div class="sub">Compra / Venta</div>
+    </div>
+
   </div>
 
   <script>
+    const meses = [
+      "Enero", "Febrero", "Marzo", "Abril",
+      "Mayo", "Junio", "Julio", "Agosto",
+      "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+
+    // 🔹 Inflación
     fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion")
       .then(res => res.json())
       .then(data => {
         const ultimo = data[data.length - 1];
 
+        const fecha = ultimo.fecha.split("-");
+        const mesNombre = meses[parseInt(fecha[1]) - 1];
+        const año = fecha[0];
+
         document.getElementById("inflacion").innerText = ultimo.valor + "%";
-        document.getElementById("fecha").innerText = "Periodo: " + ultimo.fecha;
-      })
-      .catch(() => {
-        document.getElementById("inflacion").innerText = "Error";
+        document.getElementById("mes").innerText = mesNombre + " " + año;
       });
+
+    // 🔹 Dólar Blue
+    fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares")
+      .then(res => res.json())
+      .then(data => {
+        // buscar el dólar blue
+        const blue = data.find(d => d.casa === "blue");
+
+        document.getElementById("compra").innerText = "$" + blue.compra;
+        document.getElementById("venta").innerText = "$" + blue.venta;
+      });
+
   </script>
 
 </body>
