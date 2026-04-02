@@ -16,18 +16,12 @@
       align-items: center;
       height: 100vh;
       margin: 0;
-      text-align: center;
+      text-align: left;
     }
 
     .container {
-      font-size: 20px;
-      line-height: 1.8;
-    }
-
-    .main {
-      font-size: 28px;
-      font-weight: bold;
-      margin-bottom: 20px;
+      font-size: 22px;
+      line-height: 2;
     }
   </style>
 </head>
@@ -35,19 +29,10 @@
 <body>
 
   <div class="container">
-    
-    <div class="main" id="inflacion">
-      Último dato de inflación (Mes): Cargando...
-    </div>
-
-    <div id="venta">
-      Último dato de Dólar Blue (Venta): Cargando...
-    </div>
-
-    <div id="compra">
-      Último dato de Dólar Blue (Compra): Cargando...
-    </div>
-
+    <div id="inflacion">• Inflación: Cargando...</div>
+    <div id="venta">• Dólar Blue (Venta): Cargando...</div>
+    <div id="compra">• Dólar Blue (Compra): Cargando...</div>
+    <div id="ripte">• RIPTE: Cargando...</div>
   </div>
 
   <script>
@@ -67,20 +52,42 @@
         const mesNombre = meses[parseInt(fecha[1]) - 1];
 
         document.getElementById("inflacion").innerText =
-          `Último dato de inflación (${mesNombre}): ${ultimo.valor}%`;
+          `• Inflación (Mes de ${mesNombre}): ${ultimo.valor}%`;
       });
 
-    // 🔹 Dólar Blue
+    // 🔹 Dólar Blue (último)
     fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares")
       .then(res => res.json())
       .then(data => {
         const blue = data.filter(d => d.casa === "blue").pop();
 
         document.getElementById("venta").innerText =
-          `Último dato de Dólar Blue (Venta): $${blue.venta}`;
+          `• Dólar Blue (Venta): $${blue.venta}`;
 
         document.getElementById("compra").innerText =
-          `Último dato de Dólar Blue (Compra): $${blue.compra}`;
+          `• Dólar Blue (Compra): $${blue.compra}`;
+      });
+
+    // 🔹 RIPTE (scraping)
+    fetch("https://www.argentina.gob.ar/trabajo/seguridadsocial/ripte")
+      .then(res => res.text())
+      .then(html => {
+        let m = html.match(/\$\s*([0-9]+(?:\.[0-9]{3})*,[0-9]{2})/);
+        if (!m) throw "No encontré monto RIPTE";
+
+        let valorStr = m[1];
+        let ripte = parseFloat(
+          valorStr
+            .replace(/\./g, "")
+            .replace(",", ".")
+        );
+
+        document.getElementById("ripte").innerText =
+          `• RIPTE (Remuneración Imponible Promedio de los Trabajadores Estables): $${ripte}`;
+      })
+      .catch(() => {
+        document.getElementById("ripte").innerText =
+          "• RIPTE: No disponible (CORS bloqueado)";
       });
 
   </script>
