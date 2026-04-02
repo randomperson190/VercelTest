@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Inflación Argentina</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .title {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #94a3b8;
+    }
+
+    .value {
+      font-size: 48px;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+
+    .date {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <div class="title">Última inflación</div>
+    <div id="inflacion" class="value">Cargando...</div>
+    <div id="fecha" class="date"></div>
+  </div>
+
+  <script>
+    fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion")
+      .then(res => res.json())
+      .then(data => {
+        const ultimo = data[data.length - 1];
+
+        document.getElementById("inflacion").innerText = ultimo.valor + "%";
+        document.getElementById("fecha").innerText = "Periodo: " + ultimo.fecha;
+      })
+      .catch(() => {
+        document.getElementById("inflacion").innerText = "Error";
+      });
+  </script>
+
+</body>
+</html>
