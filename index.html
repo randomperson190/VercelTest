@@ -31,7 +31,7 @@
     padding: 0 5px;
   }
   input::placeholder { color: #6666cc; }
-  h1 { text-decoration: underline; font-size: 20px; padding: 0; margin: 4px; color: white; text-align: center; width: 100%; max-width: 425px; }
+  h1 { text-decoration: underline; font-size: 20px; padding: 0; margin: 4px; color: white; text-align: left; width: 100%; max-width: 425px; }
   
   label { 
     margin-bottom: 2px; 
@@ -45,6 +45,8 @@
     white-space: pre-wrap; 
     word-wrap: break-word;
     text-align: left; 
+    width: 100%; /* Asegura que ocupe el ancho disponible para alinear el texto */
+    max-width: 425px;
   }
   
   button { 
@@ -95,7 +97,7 @@
     color: #ff66cc;
     word-wrap: break-word;
     white-space: pre-wrap;
-    text-align: left; /* Alineación a la izquierda aplicada */
+    text-align: left; 
     width: 100%;
     max-width: 425px;
   }
