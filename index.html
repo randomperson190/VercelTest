@@ -2,82 +2,48 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Argentina Finanzas</title>
-  <link rel="icon" href="https://flagcdn.com/w40/ar.png">
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .container {
-      font-size: 22px;
-      line-height: 2;
-    }
-  </style>
+  <title>Indicadores Argentina</title>
 </head>
-
 <body>
 
-  <div class="container">
-    <div id="inflacion">• Inflación: Cargando...</div>
-    <div id="venta">• Dólar Blue (Venta): Cargando...</div>
-    <div id="compra">• Dólar Blue (Compra): Cargando...</div>
-    <div id="ripte">• RIPTE: Cargando...</div>
-  </div>
+<pre id="output">Cargando datos...</pre>
 
-  <script>
-    const meses = [
-      "Enero", "Febrero", "Marzo", "Abril",
-      "Mayo", "Junio", "Julio", "Agosto",
-      "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
+<script>
+async function cargarDatos() {
+  try {
+    // Ejemplo: podés reemplazar estos valores por tus APIs reales
+    const inflacion = 2.9;
+    const dolarVenta = 1405;
+    const dolarCompra = 1395;
+    const ripte = 1646344.54;
 
-    // 🔹 Inflación
-    fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion")
-      .then(res => res.json())
-      .then(data => {
-        const ultimo = data[data.length - 1];
+    // 📌 Formateadores argentinos
+    const formatoNumero = new Intl.NumberFormat("es-AR");
+    const formatoDecimal = new Intl.NumberFormat("es-AR", {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    });
+    const formatoMoneda = new Intl.NumberFormat("es-AR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
 
-        const fecha = ultimo.fecha.split("-");
-        const mesNombre = meses[parseInt(fecha[1]) - 1];
+    // 📌 Construcción del texto final
+    const texto = 
+`• Inflación (Mes de Febrero): ${formatoDecimal.format(inflacion)}%
+• Dólar Blue (Venta): $${formatoNumero.format(dolarVenta)} ARS
+• Dólar Blue (Compra): $${formatoNumero.format(dolarCompra)} ARS
+• RIPTE: $${formatoMoneda.format(ripte)}`;
 
-        document.getElementById("inflacion").innerText =
-          `• Inflación (Mes de ${mesNombre}): ${ultimo.valor}%`;
-      });
+    document.getElementById("output").innerText = texto;
 
-    // 🔹 Dólar Blue (último correcto)
-    fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares")
-      .then(res => res.json())
-      .then(data => {
-        const blue = data.filter(d => d.casa === "blue").pop();
+  } catch (error) {
+    document.getElementById("output").innerText = "Error cargando datos";
+  }
+}
 
-        document.getElementById("venta").innerText =
-          `• Dólar Blue (Venta): $${blue.venta}`;
-
-        document.getElementById("compra").innerText =
-          `• Dólar Blue (Compra): $${blue.compra}`;
-      });
-
-    // 🔹 RIPTE con debug completo
-fetch("/api/ripte")
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById("ripte").innerText =
-      `• RIPTE: $${data.ripte.toLocaleString("es-AR")}`;
-  })
-  .catch(() => {
-    document.getElementById("ripte").innerText =
-      "• RIPTE: Error obteniendo dato";
-  });
-  </script>
+cargarDatos();
+</script>
 
 </body>
 </html>
