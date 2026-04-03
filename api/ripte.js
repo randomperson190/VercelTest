@@ -3,19 +3,20 @@ export default async function handler(req, res) {
     const response = await fetch("https://www.argentina.gob.ar/trabajo/seguridadsocial/ripte");
     const html = await response.text();
 
-    const match = html.match(/\$\s*([0-9]+(?:\.[0-9]{3})*,[0-9]{2})/);
+    let m = html.match(/\$\s*([0-9]+(?:\.[0-9]{3})*,[0-9]{2})/);
 
-    if (!match) {
+    if (!m) {
       return res.status(500).json({ error: "No se encontró RIPTE" });
     }
 
-    const valor = parseFloat(
-      match[1]
+    let valorStr = m[1];
+    let ripte = parseFloat(
+      valorStr
         .replace(/\./g, "")
         .replace(",", ".")
     );
 
-    res.status(200).json({ ripte: valor });
+    res.status(200).json({ ripte });
 
   } catch (err) {
     res.status(500).json({ error: "Error obteniendo RIPTE" });
