@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Argentina Finanzas</title>
+  <link rel="icon" href="/favicon.ico">
 </head>
+
 <body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
 
 <pre id="output">Cargando datos...</pre>
@@ -26,7 +28,7 @@ async function cargarDatos() {
     const mesNombre = meses[fecha.getMonth()];
 
     // =========================
-    // 💵 DÓLAR BLUE
+    // 💵 DÓLAR BLUE (último)
     // =========================
     const resDolar = await fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares");
     const dataDolar = await resDolar.json();
@@ -35,36 +37,24 @@ async function cargarDatos() {
     const ultimoBlue = blueItems[blueItems.length - 1];
 
     // =========================
-    // 📈 RIPTE (seguro)
+    // 📈 RIPTE (via proxy)
     // =========================
     let ripteTexto = "No disponible";
 
     try {
-      const resRipte = await fetch("https://www.argentina.gob.ar/trabajo/seguridadsocial/ripte");
-      const html = await resRipte.text();
+      const resRipte = await fetch("/api/ripte");
+      const dataRipte = await resRipte.json();
 
-      console.log("HTML RIPTE:", html);
-
-      let m = html.match(/\$\s*([0-9]+(?:\.[0-9]{3})*,[0-9]{2})/);
-
-      if (m) {
-        let valorStr = m[1];
-        let ripte = parseFloat(
-          valorStr
-            .replace(/\./g, "")
-            .replace(",", ".")
-        );
-
+      if (dataRipte.ripte) {
         const formatoMoneda = new Intl.NumberFormat("es-AR", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2
         });
 
-        ripteTexto = `$${formatoMoneda.format(ripte)} ARS`;
+        ripteTexto = `$${formatoMoneda.format(dataRipte.ripte)} ARS`;
       }
-
     } catch (e) {
-      console.warn("Error RIPTE:", e);
+      console.warn("RIPTE error:", e);
     }
 
     // =========================
@@ -80,7 +70,7 @@ async function cargarDatos() {
     // =========================
     // 🧾 OUTPUT
     // =========================
-    const texto = 
+    const texto =
 `• Inflación (Mes de ${mesNombre}): ${formatoDecimal.format(ultimaInflacion.valor)}%
 • Dólar Blue (Venta): $${formatoNumero.format(ultimoBlue.venta)} ARS
 • Dólar Blue (Compra): $${formatoNumero.format(ultimoBlue.compra)} ARS
@@ -89,7 +79,7 @@ async function cargarDatos() {
     document.getElementById("output").innerText = texto;
 
   } catch (error) {
-    console.error("ERROR GENERAL:", error);
+    console.error(error);
     document.getElementById("output").innerText = "Error cargando datos";
   }
 }
