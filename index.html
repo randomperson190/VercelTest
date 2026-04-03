@@ -4,51 +4,122 @@
 <meta charset="UTF-8">
 <title>Argentina Finanzas</title>
 <link rel="icon" href="https://flagcdn.com/ar.svg">
+<style>
+  input { height: 21px; box-sizing: border-box; font-size: 12px;}
+</style>
 </head>
 
 <body style="
-font-family:sans-serif;
+font-family:monospace;
 display:flex;
 flex-direction:column;
 align-items:center;
-gap:25px;
-padding:30px;
+gap:0px;
+padding:20px;
 font-size:16px;
 ">
 
-<pre id="output"></pre>
+<h1 style="text-decoration: underline; font-size: 20px; padding: 0; margin: 4px;">Data General</h1>
+<pre style="padding: 0; margin: 3px;" id="output"></pre>
 
-<h1 style="text-decoration: underline;">Calculadora de Inflación</h1>
+<h1 style="text-decoration: underline; font-size: 20px; padding: 0; margin: 4px;">Calculadora de Inflación (en Pesos)</h1>
 
-<div style="display:flex; flex-direction:column; gap:12px; width:340px; max-width:100%; box-sizing:border-box;">
+<div style="display:flex; flex-direction:column; gap:3px; width:425px; max-width:100%; box-sizing:border-box; margin:4px;">
 
   <label style="font-size:16px;">Monto en Pesos Argentinos:</label>
-  <div style="display:flex; align-items:center; gap:10px;">
-    <input id="monto" placeholder="0" style="min-width:0; flex:1; box-sizing:border-box;">
-    <span id="previewMonto" style="color:gray; white-space:nowrap; font-size:16px; flex-shrink:0;"></span>
+  <div style="display:flex; align-items:center; gap:0px;">
+    <div style="display:flex; align-items:center; border:1px solid #ccc; border-radius:4px; padding:0 6px; background:white; flex:1; min-width:0; width:100%;">
+      <input id="monto" placeholder="0" style="min-width:0; flex:1; box-sizing:border-box; border:none; outline:none; padding:0; background:transparent; height:21px;">
+      <span style="color:gray; font-style:italic; font-size:12px; flex-shrink:0; pointer-events:none;">ARS</span>
+    </div>
+    <span id="previewMonto" style="color:gray; white-space:nowrap; font-size:12px; flex-shrink:0;"></span>
   </div>
 
   <label style="font-size:16px;">Fecha de Origen (DDMMYYYY):</label>
-  <div style="display:flex; align-items:center; gap:10px;">
-    <input id="fechaDesde" maxlength="10" style="min-width:0; flex:1; box-sizing:border-box;">
-    <span id="previewDesde" style="color:gray; white-space:nowrap; font-size:16px; flex-shrink:0;"></span>
+  <div style="display:flex; align-items:center; gap:0px;">
+    <input id="fechaDesde" placeholder="01-01-2000" maxlength="10" style="min-width:0; flex:1; box-sizing:border-box; width:100%;">
+    <span id="previewDesde" style="color:gray; white-space:nowrap; font-size:12px; flex-shrink:0;"></span>
   </div>
 
   <label style="font-size:16px;">Fecha de Destino (DDMMYYYY):</label>
-  <div style="display:flex; align-items:center; gap:10px;">
-    <input id="fechaHasta" maxlength="10" style="min-width:0; flex:1; box-sizing:border-box;">
-    <span id="previewHasta" style="color:gray; white-space:nowrap; font-size:16px; flex-shrink:0;"></span>
+  <div style="display:flex; align-items:center; gap:0px;">
+    <input id="fechaHasta" placeholder="01-01-2020" maxlength="10" style="min-width:0; flex:1; box-sizing:border-box; width:100%;">
+    <span id="previewHasta" style="color:gray; white-space:nowrap; font-size:12px; flex-shrink:0;"></span>
   </div>
 
-  <button onclick="calcular()">Calcular</button>
+  <button style="box-sizing:border-box; width:100%; margin-top:6px;" onclick="calcular()">Calcular</button>
 
 </div>
 
+<div style="margin:4px; font-size:14px; text-align:center;" id="resultado"></div>
 
-<pre id="resultado"></pre>
+<h1 style="text-decoration: underline; font-size: 20px; padding: 0; margin: 4px;">Calculadora de Inflación (en Dólares)</h1>
+
+<div style="display:flex; flex-direction:column; gap:3px; width:425px; max-width:100%; box-sizing:border-box; margin:4px;">
+
+  <label style="font-size:16px;">Monto en Dólares:</label>
+  <div style="display:flex; align-items:center; gap:0px;">
+    <div style="display:flex; align-items:center; border:1px solid #ccc; border-radius:4px; padding:0 6px; background:white; flex:1; min-width:0; width:100%;">
+      <input id="montoDolar" placeholder="0" style="min-width:0; flex:1; box-sizing:border-box; border:none; outline:none; padding:0; background:transparent; height:21px;">
+      <span style="color:gray; font-style:italic; font-size:12px; flex-shrink:0; pointer-events:none;">USD</span>
+    </div>
+  </div>
+
+  <label style="font-size:16px;">Fecha de Origen (DDMMYYYY):</label>
+  <div style="display:flex; align-items:center; gap:0px;">
+    <input id="fechaDesdeDolar" placeholder="01-01-2000" maxlength="10" style="min-width:0; flex:1; box-sizing:border-box; width:100%;">
+    <span id="previewDesdeDolar" style="color:gray; white-space:nowrap; font-size:12px; flex-shrink:0;"></span>
+  </div>
+
+  <label style="font-size:16px;">Fecha de Destino (DDMMYYYY):</label>
+  <div style="display:flex; align-items:center; gap:0px;">
+    <input id="fechaHastaDolar" placeholder="01-01-2020" maxlength="10" style="min-width:0; flex:1; box-sizing:border-box; width:100%;">
+    <span id="previewHastaDolar" style="color:gray; white-space:nowrap; font-size:12px; flex-shrink:0;"></span>
+  </div>
+
+  <button style="box-sizing:border-box; width:100%; margin-top:6px;" onclick="calcularDolar()">Calcular</button>
+
+</div>
+
+<div style="margin:4px; font-size:14px; text-align:center;" id="resultadoDolar"></div>
+
+<h1 style="text-decoration: underline; font-size: 20px; padding: 0; margin: 4px;">Calculadora de Pesos / Dólares</h1>
+
+<div style="display:flex; flex-direction:column; gap:0px; width:425px; max-width:100%; box-sizing:border-box; margin:4px;">
+
+  <label style="font-size:16px;">Transformación de Pesos a Dólares</label>
+  <div style="display:flex; align-items:center; border:1px solid #ccc; border-radius:4px; padding:0 6px; background:white; width:100%; box-sizing:border-box;">
+    <input id="montoPesosADolar" placeholder="0" style="min-width:0; flex:1; box-sizing:border-box; border:none; outline:none; padding:0; background:transparent;">
+    <span style="color:gray; font-style:italic; font-size:12px; flex-shrink:0; pointer-events:none;">ARS</span>
+  </div>
+  <button style="box-sizing:border-box; width:100%; margin-top:6px;" onclick="calcularPesosADolar()">Calcular</button>
+
+</div>
+
+<div style="margin:4px; text-align:center;">
+  <pre style="display:inline-block; text-align:left; font-size:10px; margin:0;" id="resultadoPesosADolar"></pre>
+</div>
+
+<div style="display:flex; flex-direction:column; gap:0px; width:425px; max-width:100%; box-sizing:border-box; margin:4px;">
+
+  <label style="font-size:16px;">Transformación de Dólares a Pesos</label>
+  <div style="display:flex; align-items:center; border:1px solid #ccc; border-radius:4px; padding:0 6px; background:white; width:100%; box-sizing:border-box;">
+    <input id="montoDolarAPesos" placeholder="0" style="min-width:0; flex:1; box-sizing:border-box; border:none; outline:none; padding:0; background:transparent;">
+    <span style="color:gray; font-style:italic; font-size:12px; flex-shrink:0; pointer-events:none;">USD</span>
+  </div>
+  <button style="box-sizing:border-box; width:100%; margin-top:6px;" onclick="calcularDolarAPesos()">Calcular</button>
+
+</div>
+
+<div style="margin:4px; text-align:center;">
+  <pre style="display:inline-block; text-align:left; font-size:10px; margin:0;" id="resultadoDolarAPesos"></pre>
+</div>
 
 <script>
 let inflacionData = [];
+let blueVenta = null;
+let blueCompra = null;
+let cpiData = [];
 
 // =======================
 // CARGA DATOS
@@ -69,6 +140,9 @@ async function cargarTodo() {
     const blue = dataDolar.filter(d => d.casa === "blue");
     const ultimoBlue = blue[blue.length - 1];
 
+    blueVenta = ultimoBlue.venta;
+    blueCompra = ultimoBlue.compra;
+
     let ripteTexto = "No disponible";
     try {
       const r = await fetch("/api/ripte");
@@ -79,14 +153,21 @@ async function cargarTodo() {
       }
     } catch {}
 
+    try {
+      const resCpi = await fetch("/api/cpi");
+      const dataCpi = await resCpi.json();
+      cpiData = dataCpi.observations.filter(o => o.value !== ".");
+    } catch {}
+
     const fDec = new Intl.NumberFormat("es-AR",{minimumFractionDigits:1});
     const fNum = new Intl.NumberFormat("es-AR");
 
     document.getElementById("output").innerText =
 `• Inflación (Mes de ${mesNombre}): ${fDec.format(ultima.valor)}%
-• Dólar Blue (Venta): $${fNum.format(ultimoBlue.venta)} ARS
-• Dólar Blue (Compra): $${fNum.format(ultimoBlue.compra)} ARS
-• RIPTE: ${ripteTexto}`;
+- Dólar Blue (Venta): $${fNum.format(ultimoBlue.venta)} ARS
+- Dólar Blue (Intermedio): $${fNum.format((ultimoBlue.venta + ultimoBlue.compra) / 2)} ARS
+- Dólar Blue (Compra): $${fNum.format(ultimoBlue.compra)} ARS
+- RIPTE: ${ripteTexto}`;
 
   } catch {
     document.getElementById("output").innerText = "Error cargando datos";
@@ -104,10 +185,15 @@ function parseFecha(txt) {
   return new Date(y, m, d);
 }
 
+function fechaDeItem(fechaStr) {
+  const [y, m, d] = fechaStr.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
 // =======================
 // AUTO FORMATO FECHA
 // =======================
-function autoFormato(input) {
+function autoFormato(input, callbackPreview) {
   input.addEventListener("input", () => {
     let pos = input.selectionStart;
     let v = input.value.replace(/\D/g, "");
@@ -117,33 +203,60 @@ function autoFormato(input) {
 
     input.value = v;
 
-    let guiones = (v.match(/-/g) || []).length; // ← nuevo
-    let posAjustada = Math.min(pos + guiones, v.length); // ← nuevo
-    input.setSelectionRange(posAjustada, posAjustada); // ← reemplaza el anterior
-    actualizarPreview();
+    let guiones = (v.match(/-/g) || []).length;
+    let posAjustada = Math.min(pos + guiones, v.length);
+    input.setSelectionRange(posAjustada, posAjustada);
+    callbackPreview();
   });
 }
 
 // =======================
-// FORMATO MONTO
+// FORMATO MONTO INFLACIÓN ARS
 // =======================
 monto.addEventListener("input", () => {
-  // Guardar valor crudo sin formatear
   let raw = monto.value.replace(/[^\d]/g, "");
-
-  if (raw === "") {
-    monto.value = "";
-    previewMonto.innerText = "";
-    return;
-  }
-
-  // Convertir a número y formatear con puntos de miles (sin decimales en el input)
-  let numero = parseInt(raw, 10);
-  let formateado = numero.toLocaleString("es-AR");
-
+  if (raw === "") { monto.value = ""; previewMonto.innerText = ""; return; }
+  let formateado = parseInt(raw, 10).toLocaleString("es-AR");
   monto.value = formateado;
+  previewMonto.innerText = "";
+});
 
-  previewMonto.innerText = formateado + " ARS";
+// =======================
+// FORMATO MONTO INFLACIÓN USD
+// =======================
+montoDolar.addEventListener("input", () => {
+  let raw = montoDolar.value.replace(/[^\d]/g, "");
+  if (raw === "") { montoDolar.value = ""; return; }
+  let formateado = parseInt(raw, 10).toLocaleString("es-AR");
+  montoDolar.value = formateado;
+});
+
+// =======================
+// FORMATO MONTO PESOS A DÓLAR
+// =======================
+montoPesosADolar.addEventListener("input", () => {
+  let raw = montoPesosADolar.value.replace(/[^\d]/g, "");
+  if (raw === "") { montoPesosADolar.value = ""; return; }
+  let formateado = parseInt(raw, 10).toLocaleString("es-AR");
+  montoPesosADolar.value = formateado;
+});
+
+// =======================
+// FORMATO MONTO DÓLAR A PESOS
+// =======================
+montoDolarAPesos.addEventListener("input", () => {
+  let raw = montoDolarAPesos.value.replace(/[^\d,]/g, "");
+
+  let partes = raw.split(",");
+  if (partes.length > 2) partes = [partes[0], partes.slice(1).join("")];
+
+  let entero = partes[0];
+  let decimal = partes.length > 1 ? "," + partes[1].slice(0, 2) : "";
+
+  if (entero === "") { montoDolarAPesos.value = ""; return; }
+
+  let formateado = parseInt(entero, 10).toLocaleString("es-AR") + decimal;
+  montoDolarAPesos.value = formateado;
 });
 
 // =======================
@@ -151,10 +264,8 @@ monto.addEventListener("input", () => {
 // =======================
 function fechaLarga(txt) {
   if (txt.length < 10) return "";
-
   const f = parseFecha(txt);
   const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-
   return `${f.getDate()} de ${meses[f.getMonth()]} de ${f.getFullYear()}`;
 }
 
@@ -163,8 +274,13 @@ function actualizarPreview() {
   previewHasta.innerText = fechaLarga(fechaHasta.value);
 }
 
+function actualizarPreviewDolar() {
+  previewDesdeDolar.innerText = fechaLarga(fechaDesdeDolar.value);
+  previewHastaDolar.innerText = fechaLarga(fechaHastaDolar.value);
+}
+
 // =======================
-// FACTOR
+// FACTOR INFLACIÓN ARS
 // =======================
 function factorEntreFechas(desde, hasta) {
   if (desde > hasta) return 1 / factorEntreFechas(hasta, desde);
@@ -172,7 +288,7 @@ function factorEntreFechas(desde, hasta) {
   let factor = 1;
 
   for (let item of inflacionData) {
-    const f = new Date(item.fecha);
+    const f = fechaDeItem(item.fecha);
     const y = f.getFullYear();
     const m = f.getMonth();
 
@@ -197,28 +313,116 @@ function factorEntreFechas(desde, hasta) {
 }
 
 // =======================
-// CALCULAR
+// CALCULAR INFLACIÓN ARS
 // =======================
 function calcular() {
   try {
-    // Limpiar puntos de miles del formato es-AR
     const montoVal = parseFloat(monto.value.replace(/\./g, "").replace(",", "."));
     const desde = parseFecha(fechaDesde.value);
     const hasta = parseFecha(fechaHasta.value);
 
     const resultado = montoVal * factorEntreFechas(desde, hasta);
 
-    const f = new Intl.NumberFormat("es-AR", {minimumFractionDigits:2});
+    if (isNaN(resultado)) {
+      document.getElementById("resultado").innerText = "???";
+      return;
+    }
+
+    const f = new Intl.NumberFormat("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2});
     document.getElementById("resultado").innerText = `$${f.format(resultado)} ARS`;
 
   } catch {
-    document.getElementById("resultado").innerText = "Error";
+    document.getElementById("resultado").innerText = "???";
   }
 }
 
+// =======================
+// FACTOR CPI USD
+// =======================
+function getCpiParaFecha(fecha) {
+  let resultado = null;
+  for (let obs of cpiData) {
+    const f = fechaDeItem(obs.date);
+    if (f <= fecha) resultado = parseFloat(obs.value);
+    else break;
+  }
+  return resultado;
+}
+
+// =======================
+// CALCULAR INFLACIÓN USD
+// =======================
+function calcularDolar() {
+  const el = document.getElementById("resultadoDolar");
+  try {
+    const montoVal = parseFloat(montoDolar.value.replace(/\./g, "").replace(",", "."));
+    const desde = parseFecha(fechaDesdeDolar.value);
+    const hasta = parseFecha(fechaHastaDolar.value);
+
+    if (isNaN(montoVal)) { el.innerText = "???"; return; }
+
+    const cpiDesde = getCpiParaFecha(desde);
+    const cpiHasta = getCpiParaFecha(hasta);
+
+    if (!cpiDesde || !cpiHasta) { el.innerText = "???"; return; }
+
+    const resultado = montoVal * (cpiHasta / cpiDesde);
+
+    const f = new Intl.NumberFormat("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2});
+    el.innerText = `$${f.format(resultado)} USD`;
+
+  } catch {
+    el.innerText = "???";
+  }
+}
+
+// =======================
+// CALCULADORA DÓLAR
+// =======================
+function formatARS(n) {
+  return new Intl.NumberFormat("es-AR", {minimumFractionDigits:0, maximumFractionDigits:2}).format(n);
+}
+function formatUSD(n) {
+  return new Intl.NumberFormat("es-AR", {minimumFractionDigits:0, maximumFractionDigits:2}).format(n);
+}
+
+function calcularPesosADolar() {
+  const el = document.getElementById("resultadoPesosADolar");
+  if (blueVenta === null) { el.innerText = "???"; return; }
+
+  const raw = montoPesosADolar.value.replace(/\./g, "");
+  const pesos = parseFloat(raw);
+  if (isNaN(pesos)) { el.innerText = "???"; return; }
+
+  const blueIntermedio = (blueVenta + blueCompra) / 2;
+
+  el.innerText =
+`- ${formatARS(pesos)} ARS son ${formatUSD(pesos / blueVenta)} USD tomando el valor de Dólar Blue (Venta)
+- ${formatARS(pesos)} ARS son ${formatUSD(pesos / blueIntermedio)} USD tomando el valor de Dólar Blue (Intermedio)
+- ${formatARS(pesos)} ARS son ${formatUSD(pesos / blueCompra)} USD tomando el valor de Dólar Blue (Compra)`;
+}
+
+function calcularDolarAPesos() {
+  const el = document.getElementById("resultadoDolarAPesos");
+  if (blueVenta === null) { el.innerText = "???"; return; }
+
+  const raw = montoDolarAPesos.value.replace(/\./g, "").replace(",", ".");
+  const dolares = parseFloat(raw);
+  if (isNaN(dolares)) { el.innerText = "???"; return; }
+
+  const blueIntermedio = (blueVenta + blueCompra) / 2;
+
+  el.innerText =
+`- ${formatUSD(dolares)} USD son ${formatARS(dolares * blueVenta)} ARS tomando el valor de Dólar Blue (Venta)
+- ${formatUSD(dolares)} USD son ${formatARS(dolares * blueIntermedio)} ARS tomando el valor de Dólar Blue (Intermedio)
+- ${formatUSD(dolares)} USD son ${formatARS(dolares * blueCompra)} ARS tomando el valor de Dólar Blue (Compra)`;
+}
+
 // INIT
-autoFormato(fechaDesde);
-autoFormato(fechaHasta);
+autoFormato(fechaDesde, actualizarPreview);
+autoFormato(fechaHasta, actualizarPreview);
+autoFormato(fechaDesdeDolar, actualizarPreviewDolar);
+autoFormato(fechaHastaDolar, actualizarPreviewDolar);
 cargarTodo();
 </script>
 
