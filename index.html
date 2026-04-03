@@ -1,49 +1,46 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Argentina Finanzas</title>
-  <link rel="icon" href="https://flagcdn.com/ar.svg" type="image/svg+xml">
+<meta charset="UTF-8">
+<title>Argentina Finanzas</title>
+<link rel="icon" href="https://flagcdn.com/ar.svg">
 </head>
 
 <body style="
-  font-family:sans-serif;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:25px;
-  padding:30px;
-  font-size:16px;
+font-family:sans-serif;
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:25px;
+padding:30px;
+font-size:16px;
 ">
 
 <pre id="output"></pre>
 
 <h1 style="text-decoration: underline;">Calculadora de Inflación</h1>
 
-<div style="display:flex; flex-direction:column; gap:12px; width:320px;">
+<div style="display:flex; flex-direction:column; gap:12px; width:340px;">
 
-  <!-- MONTO -->
-  <label>Monto en Pesos Argentinos:</label>
-  <div style="display:flex;">
-    <input id="monto" style="width:100%;">
-    <span id="previewMonto" style="color:gray; margin-left:10px; white-space:nowrap;"></span>
-  </div>
+<label>Monto en Pesos Argentinos:</label>
+<div style="display:flex;">
+<input id="monto" style="width:100%;">
+<span id="previewMonto" style="color:gray; margin-left:10px;"></span>
+</div>
 
-  <!-- DESDE -->
-  <label>Fecha de Origen (DDMMYYYY):</label>
-  <div style="display:flex;">
-    <input id="fechaDesde" maxlength="10" style="width:100%;">
-    <span id="previewDesde" style="color:gray; margin-left:10px; white-space:nowrap;"></span>
-  </div>
+<label>Fecha de Origen (DDMMYYYY):</label>
+<div style="display:flex;">
+<input id="fechaDesde" maxlength="10" style="width:100%;">
+<span id="previewDesde" style="color:gray; margin-left:10px;"></span>
+</div>
 
-  <!-- HASTA -->
-  <label>Fecha de Destino (DDMMYYYY):</label>
-  <div style="display:flex;">
-    <input id="fechaHasta" maxlength="10" style="width:100%;">
-    <span id="previewHasta" style="color:gray; margin-left:10px; white-space:nowrap;"></span>
-  </div>
+<label>Fecha de Destino (DDMMYYYY):</label>
+<div style="display:flex;">
+<input id="fechaHasta" maxlength="10" style="width:100%;">
+<span id="previewHasta" style="color:gray; margin-left:10px;"></span>
+</div>
 
-  <button onclick="calcular()">Calcular</button>
+<button onclick="calcular()">Calcular</button>
 
 </div>
 
@@ -52,45 +49,135 @@
 <script>
 let inflacionData = [];
 
-// =========================
-// CARGA
-// =========================
+// =======================
+// CARGA DATOS
+// =======================
 async function cargarTodo() {
-  const res = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
-  inflacionData = await res.json();
+  try {
+    const resInflacion = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
+    inflacionData = await resInflacion.json();
+
+    const ultima = inflacionData[inflacionData.length - 1];
+    const fecha = new Date(ultima.fecha);
+
+    const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const mesNombre = meses[fecha.getMonth()];
+
+    const resDolar = await fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares");
+    const dataDolar = await resDolar.json();
+    const blue = dataDolar.filter(d => d.casa === "blue");
+    const ultimoBlue = blue[blue.length - 1];
+
+    let ripteTexto = "No disponible";
+    try {
+      const r = await fetch("/api/ripte");
+      const d = await r.json();
+      if (d.ripte) {
+        const f = new Intl.NumberFormat("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
+        ripteTexto = `$${f.format(d.ripte)} ARS`;
+      }
+    } catch {}
+
+    const fDec = new Intl.NumberFormat("es-AR",{minimumFractionDigits:1});
+    const fNum = new Intl.NumberFormat("es-AR");
+
+    document.getElementById("output").innerText =
+`• Inflación (Mes de ${mesNombre}): ${fDec.format(ultima.valor)}%
+• Dólar Blue (Venta): $${fNum.format(ultimoBlue.venta)} ARS
+• Dólar Blue (Compra): $${fNum.format(ultimoBlue.compra)} ARS
+• RIPTE: ${ripteTexto}`;
+
+  } catch {
+    document.getElementById("output").innerText = "Error cargando datos";
+  }
 }
 
-// =========================
-// FECHA (FIX TIMEZONE)
-// =========================
+// =======================
+// FECHA SIN BUG
+// =======================
 function parseFecha(txt) {
   const limpio = txt.replace(/-/g,"");
-
   const d = parseInt(limpio.slice(0,2));
   const m = parseInt(limpio.slice(2,4)) - 1;
   const y = parseInt(limpio.slice(4,8));
-
-  return new Date(y, m, d); // 👈 FIX
+  return new Date(y, m, d);
 }
 
-// =========================
-// AUTO FORMATO
-// =========================
+// =======================
+// AUTO FORMATO FECHA
+// =======================
 function autoFormato(input) {
   input.addEventListener("input", () => {
+    let pos = input.selectionStart;
     let v = input.value.replace(/\D/g, "");
 
     if (v.length > 2) v = v.slice(0,2) + "-" + v.slice(2);
     if (v.length > 5) v = v.slice(0,5) + "-" + v.slice(5,9);
 
     input.value = v;
+    input.setSelectionRange(pos, pos);
     actualizarPreview();
   });
 }
 
-// =========================
+// =======================
+// FORMATO MONTO
+// =======================
+monto.addEventListener("input", (e) => {
+  let input = e.target;
+  let pos = input.selectionStart;
+
+  let valor = input.value;
+  valor = valor.replace(/\./g, ",").replace(/[^0-9,]/g, "");
+
+  let partes = valor.split(",");
+  if (partes.length > 2) {
+    valor = partes[0] + "," + partes.slice(1).join("");
+    partes = valor.split(",");
+  }
+
+  let entero = partes[0];
+  let decimal = partes[1] || "";
+
+  let enteroNum = entero ? parseInt(entero, 10) : 0;
+  let enteroFormateado = entero ? enteroNum.toLocaleString("es-AR") : "";
+
+  decimal = decimal.slice(0,2);
+
+  let nuevo = decimal.length > 0 ? `${enteroFormateado},${decimal}` : enteroFormateado;
+
+  let diff = nuevo.length - valor.length;
+
+  input.value = nuevo;
+  input.setSelectionRange(pos + diff, pos + diff);
+
+  let numero = parseFloat(nuevo.replace(/\./g,"").replace(",","."));
+
+  previewMonto.innerText = isNaN(numero)
+    ? ""
+    : `${new Intl.NumberFormat("es-AR").format(numero)} ARS`;
+});
+
+// =======================
+// PREVIEW FECHAS
+// =======================
+function fechaLarga(txt) {
+  if (txt.length < 10) return "";
+
+  const f = parseFecha(txt);
+  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+  return `${f.getDate()} de ${meses[f.getMonth()]} de ${f.getFullYear()}`;
+}
+
+function actualizarPreview() {
+  previewDesde.innerText = fechaLarga(fechaDesde.value);
+  previewHasta.innerText = fechaLarga(fechaHasta.value);
+}
+
+// =======================
 // FACTOR
-// =========================
+// =======================
 function factorEntreFechas(desde, hasta) {
   if (desde > hasta) return 1 / factorEntreFechas(hasta, desde);
 
@@ -121,86 +208,25 @@ function factorEntreFechas(desde, hasta) {
   return factor;
 }
 
-// =========================
-// PREVIEW
-// =========================
-const fNum = new Intl.NumberFormat("es-AR");
-
-document.getElementById("monto").addEventListener("input", () => {
-  const v = parseFloat(monto.value);
-  previewMonto.innerText = isNaN(v) ? "" : `${fNum.format(v)} ARS`;
-});
-
-function fechaLarga(txt) {
-  if (txt.length < 10) return "";
-
-  const f = parseFecha(txt);
-
-  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-
-  return `${f.getDate()} de ${meses[f.getMonth()]} de ${f.getFullYear()}`;
-}
-
-function actualizarPreview() {
-  previewDesde.innerText = fechaLarga(fechaDesde.value);
-  previewHasta.innerText = fechaLarga(fechaHasta.value);
-}
-
-// =========================
+// =======================
 // CALCULAR
-// =========================
+// =======================
 function calcular() {
   try {
-    const monto = parseFloat(document.getElementById("monto").value);
+    const montoVal = parseFloat(monto.value.replace(/\./g,"").replace(",","."));
     const desde = parseFecha(fechaDesde.value);
     const hasta = parseFecha(fechaHasta.value);
 
-    const resultado = monto * factorEntreFechas(desde, hasta);
+    const resultado = montoVal * factorEntreFechas(desde, hasta);
 
-    const f = new Intl.NumberFormat("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
-
-    document.getElementById("resultado").innerText =
-      `$${f.format(resultado)} ARS`;
+    const f = new Intl.NumberFormat("es-AR",{minimumFractionDigits:2});
+    document.getElementById("resultado").innerText = `$${f.format(resultado)} ARS`;
 
   } catch {
     resultado.innerText = "Error";
   }
 }
 
-  const montoInput = document.getElementById("monto");
-
-montoInput.addEventListener("input", () => {
-  let valor = montoInput.value;
-
-  // Permitir solo números y coma
-  valor = valor.replace(/[^0-9,]/g, "");
-
-  // Separar parte entera y decimal
-  let partes = valor.split(",");
-
-  let entero = partes[0];
-  let decimal = partes[1] || "";
-
-  // Formatear miles
-  if (entero.length > 0) {
-    entero = parseInt(entero, 10).toLocaleString("es-AR");
-  }
-
-  // Limitar decimales a 2
-  decimal = decimal.slice(0, 2);
-
-  // Reconstruir valor
-  montoInput.value = decimal.length > 0 ? `${entero},${decimal}` : entero;
-
-  // Actualizar preview gris
-  let numero = parseFloat(
-    montoInput.value.replace(/\./g, "").replace(",", ".")
-  );
-
-  previewMonto.innerText = isNaN(numero)
-    ? ""
-    : `${new Intl.NumberFormat("es-AR").format(numero)} ARS`;
-});
 // INIT
 autoFormato(fechaDesde);
 autoFormato(fechaHasta);
