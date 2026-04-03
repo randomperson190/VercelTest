@@ -1,255 +1,236 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Argentina Finanzas</title>
-  <link rel="icon" href="https://flagcdn.com/ar.svg">
-
-  <style>
-    body {
-      font-family: Arial;
-      padding: 20px;
-      font-size: 16px;
-    }
-
-    .fila {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    input {
-      padding: 5px;
-      width: 180px;
-      font-size: 16px;
-    }
-
-    .preview {
-      color: gray;
-      white-space: nowrap;
-    }
-
-    button {
-      margin-top: 15px;
-      padding: 6px 12px;
-      font-size: 16px;
-    }
-
-    h1 {
-      font-size: 16px;
-      text-decoration: underline;
-      margin-bottom: 15px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Argentina Finanzas</title>
+<link rel="icon" href="https://flagcdn.com/ar.svg">
 </head>
 
-<body>
+<body style="
+font-family:sans-serif;
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:25px;
+padding:30px;
+font-size:16px;
+">
 
-<div id="datos">Cargando datos...</div>
+<pre id="output"></pre>
 
-<h1>Calculadora de Inflación</h1>
+<h1 style="text-decoration: underline;">Calculadora de Inflación</h1>
 
-<div style="display:flex; flex-direction:column; gap:12px; width:360px;">
+<div style="display:flex; flex-direction:column; gap:12px; width:340px;">
 
-  <div class="fila">
-    <div>Monto en Pesos Argentinos:</div>
-    <input id="monto" placeholder="Ej: 1000">
-    <div id="previewMonto" class="preview"></div>
-  </div>
+<label>Monto en Pesos Argentinos:</label>
+<div style="display:flex;">
+<input id="monto" style="width:100%;">
+<span id="previewMonto" style="color:gray; margin-left:10px;"></span>
+</div>
 
-  <div class="fila">
-    <div>Fecha de Origen (DDMMYYYY):</div>
-    <input id="fechaOrigen" placeholder="01012025">
-    <div id="previewOrigen" class="preview"></div>
-  </div>
+<label>Fecha de Origen (DDMMYYYY):</label>
+<div style="display:flex;">
+<input id="fechaDesde" maxlength="10" style="width:100%;">
+<span id="previewDesde" style="color:gray; margin-left:10px;"></span>
+</div>
 
-  <div class="fila">
-    <div>Fecha de Destino (DDMMYYYY):</div>
-    <input id="fechaDestino" placeholder="01032025">
-    <div id="previewDestino" class="preview"></div>
-  </div>
-
+<label>Fecha de Destino (DDMMYYYY):</label>
+<div style="display:flex;">
+<input id="fechaHasta" maxlength="10" style="width:100%;">
+<span id="previewHasta" style="color:gray; margin-left:10px;"></span>
 </div>
 
 <button onclick="calcular()">Calcular</button>
 
-<div id="resultado" style="margin-top:15px;"></div>
+</div>
+
+<pre id="resultado"></pre>
 
 <script>
-
-const meses = [
-  "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
-];
-
 let inflacionData = [];
 
-/* =========================
-   FETCH DATOS
-========================= */
-
-async function cargarDatos() {
+// =======================
+// CARGA DATOS
+// =======================
+async function cargarTodo() {
   try {
-    const inflacionRes = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
-    inflacionData = await inflacionRes.json();
-
-    const dolarRes = await fetch("https://dolarify-api.vercel.app/api/dolar");
-    const dolar = await dolarRes.json();
-
-    const ripteRes = await fetch("https://api.argly.com.ar/api/ripte");
-    const ripte = await ripteRes.json();
+    const resInflacion = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
+    inflacionData = await resInflacion.json();
 
     const ultima = inflacionData[inflacionData.length - 1];
+    const fecha = new Date(ultima.fecha);
 
-    document.getElementById("datos").innerHTML = `
-• Inflación (Mes de ${meses[new Date(ultima.fecha).getMonth()]}): ${ultima.valor.toString().replace(".", ",")}%<br>
-• Dólar Blue (Venta): $${formatear(dolar.dolarBlue.venta)} ARS<br>
-• Dólar Blue (Compra): $${formatear(dolar.dolarBlue.compra)} ARS<br>
-• RIPTE: $${formatear(ripte.valor)} ARS
-    `;
+    const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const mesNombre = meses[fecha.getMonth()];
 
-  } catch (e) {
-    document.getElementById("datos").innerText = "Error cargando datos";
-    console.error(e);
+    const resDolar = await fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares");
+    const dataDolar = await resDolar.json();
+    const blue = dataDolar.filter(d => d.casa === "blue");
+    const ultimoBlue = blue[blue.length - 1];
+
+    let ripteTexto = "No disponible";
+    try {
+      const r = await fetch("/api/ripte");
+      const d = await r.json();
+      if (d.ripte) {
+        const f = new Intl.NumberFormat("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
+        ripteTexto = `$${f.format(d.ripte)} ARS`;
+      }
+    } catch {}
+
+    const fDec = new Intl.NumberFormat("es-AR",{minimumFractionDigits:1});
+    const fNum = new Intl.NumberFormat("es-AR");
+
+    document.getElementById("output").innerText =
+`• Inflación (Mes de ${mesNombre}): ${fDec.format(ultima.valor)}%
+• Dólar Blue (Venta): $${fNum.format(ultimoBlue.venta)} ARS
+• Dólar Blue (Compra): $${fNum.format(ultimoBlue.compra)} ARS
+• RIPTE: ${ripteTexto}`;
+
+  } catch {
+    document.getElementById("output").innerText = "Error cargando datos";
   }
 }
 
-/* =========================
-   FORMATOS
-========================= */
-
-function formatear(num) {
-  return new Intl.NumberFormat("es-AR").format(num);
+// =======================
+// FECHA SIN BUG
+// =======================
+function parseFecha(txt) {
+  const limpio = txt.replace(/-/g,"");
+  const d = parseInt(limpio.slice(0,2));
+  const m = parseInt(limpio.slice(2,4)) - 1;
+  const y = parseInt(limpio.slice(4,8));
+  return new Date(y, m, d);
 }
 
-/* =========================
-   MONTO INPUT
-========================= */
-
-const monto = document.getElementById("monto");
-const previewMonto = document.getElementById("previewMonto");
-
-monto.addEventListener("input", (e) => {
-  let limpio = e.target.value.replace(/\D/g, "");
-
-  if (!limpio) {
-    monto.value = "";
-    previewMonto.innerText = "";
-    return;
-  }
-
-  let numero = parseInt(limpio, 10);
-  let formateado = formatear(numero);
-
-  monto.value = formateado;
-
-  // cursor al final
-  monto.setSelectionRange(monto.value.length, monto.value.length);
-
-  previewMonto.innerText = formateado + " ARS";
-});
-
-/* =========================
-   FECHAS
-========================= */
-
-function autoFormato(input, preview) {
+// =======================
+// AUTO FORMATO FECHA
+// =======================
+function autoFormato(input) {
   input.addEventListener("input", () => {
+    let pos = input.selectionStart;
     let v = input.value.replace(/\D/g, "");
 
-    let nuevo = "";
-    if (v.length > 0) nuevo = v.slice(0,2);
-    if (v.length >= 3) nuevo += "-" + v.slice(2,4);
-    if (v.length >= 5) nuevo += "-" + v.slice(4,8);
+    if (v.length > 2) v = v.slice(0,2) + "-" + v.slice(2);
+    if (v.length > 5) v = v.slice(0,5) + "-" + v.slice(5,9);
 
-    input.value = nuevo;
-
-    input.setSelectionRange(input.value.length, input.value.length);
-
+    input.value = v;
+    input.setSelectionRange(pos, pos);
     actualizarPreview();
   });
 }
 
-function parseFecha(str) {
-  let [d,m,y] = str.split("-");
-  return new Date(y, m-1, d);
-}
+// =======================
+// FORMATO MONTO
+// =======================
+monto.addEventListener("input", (e) => {
+  let input = e.target;
+  let pos = input.selectionStart;
 
-function fechaTexto(f) {
+  let valor = input.value;
+  valor = valor.replace(/\./g, ",").replace(/[^0-9,]/g, "");
+
+  let partes = valor.split(",");
+  if (partes.length > 2) {
+    valor = partes[0] + "," + partes.slice(1).join("");
+    partes = valor.split(",");
+  }
+
+  let entero = partes[0];
+  let decimal = partes[1] || "";
+
+  let enteroNum = entero ? parseInt(entero, 10) : 0;
+  let enteroFormateado = entero ? enteroNum.toLocaleString("es-AR") : "";
+
+  decimal = decimal.slice(0,2);
+
+  let nuevo = decimal.length > 0 ? `${enteroFormateado},${decimal}` : enteroFormateado;
+
+  let diff = nuevo.length - valor.length;
+
+  input.value = nuevo;
+  input.setSelectionRange(pos + diff, pos + diff);
+
+  let numero = parseFloat(nuevo.replace(/\./g,"").replace(",","."));
+
+  previewMonto.innerText = isNaN(numero)
+    ? ""
+    : `${new Intl.NumberFormat("es-AR").format(numero)} ARS`;
+});
+
+// =======================
+// PREVIEW FECHAS
+// =======================
+function fechaLarga(txt) {
+  if (txt.length < 10) return "";
+
+  const f = parseFecha(txt);
+  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
   return `${f.getDate()} de ${meses[f.getMonth()]} de ${f.getFullYear()}`;
 }
 
-const fechaOrigen = document.getElementById("fechaOrigen");
-const fechaDestino = document.getElementById("fechaDestino");
-
-const previewOrigen = document.getElementById("previewOrigen");
-const previewDestino = document.getElementById("previewDestino");
-
-autoFormato(fechaOrigen, previewOrigen);
-autoFormato(fechaDestino, previewDestino);
-
 function actualizarPreview() {
-  try {
-    if (fechaOrigen.value.length === 10) {
-      previewOrigen.innerText = fechaTexto(parseFecha(fechaOrigen.value));
-    }
-    if (fechaDestino.value.length === 10) {
-      previewDestino.innerText = fechaTexto(parseFecha(fechaDestino.value));
-    }
-  } catch {}
+  previewDesde.innerText = fechaLarga(fechaDesde.value);
+  previewHasta.innerText = fechaLarga(fechaHasta.value);
 }
 
-/* =========================
-   CALCULO INFLACION
-========================= */
+// =======================
+// FACTOR
+// =======================
+function factorEntreFechas(desde, hasta) {
+  if (desde > hasta) return 1 / factorEntreFechas(hasta, desde);
 
+  let factor = 1;
+
+  for (let item of inflacionData) {
+    const f = new Date(item.fecha);
+    const y = f.getFullYear();
+    const m = f.getMonth();
+
+    const inicioMes = new Date(y, m, 1);
+    const finMes = new Date(y, m + 1, 0);
+
+    const inicio = new Date(Math.max(inicioMes, desde));
+    const fin = new Date(Math.min(finMes, hasta));
+
+    if (inicio <= fin) {
+      const diasMes = finMes.getDate();
+      const dias = Math.floor((fin - inicio)/(1000*60*60*24)) + 1;
+
+      const inflacion = item.valor / 100;
+      const parcial = Math.pow(1 + inflacion, dias / diasMes);
+
+      factor *= parcial;
+    }
+  }
+
+  return factor;
+}
+
+// =======================
+// CALCULAR
+// =======================
 function calcular() {
   try {
-    let montoBase = parseInt(monto.value.replace(/\./g,""));
-    let f1 = parseFecha(fechaOrigen.value);
-    let f2 = parseFecha(fechaDestino.value);
+    const montoVal = parseFloat(monto.value.replace(/\./g,"").replace(",","."));
+    const desde = parseFecha(fechaDesde.value);
+    const hasta = parseFecha(fechaHasta.value);
 
-    let invertido = false;
-    if (f1 > f2) {
-      [f1, f2] = [f2, f1];
-      invertido = true;
-    }
+    const resultado = montoVal * factorEntreFechas(desde, hasta);
 
-    let valor = montoBase;
-
-    for (let i = 0; i < inflacionData.length; i++) {
-      let fechaMes = new Date(inflacionData[i].fecha);
-      let tasa = inflacionData[i].valor;
-
-      let inicioMes = new Date(fechaMes.getFullYear(), fechaMes.getMonth(), 1);
-      let finMes = new Date(fechaMes.getFullYear(), fechaMes.getMonth()+1, 0);
-
-      let inicio = new Date(Math.max(f1, inicioMes));
-      let fin = new Date(Math.min(f2, finMes));
-
-      if (inicio <= fin) {
-        let dias = (fin - inicio) / (1000*60*60*24) + 1;
-        let totalMes = finMes.getDate();
-
-        let tasaDiaria = Math.pow(1 + tasa/100, 1/totalMes);
-        valor *= Math.pow(tasaDiaria, dias);
-      }
-    }
-
-    if (invertido) valor = montoBase / (valor / montoBase);
-
-    document.getElementById("resultado").innerText =
-      "Resultado: " + formatear(Math.round(valor)) + " ARS";
+    const f = new Intl.NumberFormat("es-AR",{minimumFractionDigits:2});
+    document.getElementById("resultado").innerText = `$${f.format(resultado)} ARS`;
 
   } catch {
-    document.getElementById("resultado").innerText = "Error en cálculo";
+    resultado.innerText = "Error";
   }
 }
 
-/* ========================= */
-
-cargarDatos();
-
+// INIT
+autoFormato(fechaDesde);
+autoFormato(fechaHasta);
+cargarTodo();
 </script>
 
 </body>
