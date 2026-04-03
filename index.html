@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Argentina Finanzas</title>
-  <link rel="icon" href="/favicon.ico">
+  <title>🇦🇷 Argentina Finanzas</title>
 </head>
 
 <body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
@@ -37,7 +36,7 @@ async function cargarDatos() {
     const ultimoBlue = blueItems[blueItems.length - 1];
 
     // =========================
-    // 📈 RIPTE (via proxy)
+    // 📈 RIPTE (proxy)
     // =========================
     let ripteTexto = "No disponible";
 
@@ -71,7 +70,9 @@ async function cargarDatos() {
     // 🧾 OUTPUT
     // =========================
     const texto =
-`• Inflación (Mes de ${mesNombre}): ${formatoDecimal.format(ultimaInflacion.valor)}%
+`🇦🇷 Argentina Finanzas
+
+• Inflación (Mes de ${mesNombre}): ${formatoDecimal.format(ultimaInflacion.valor)}%
 • Dólar Blue (Venta): $${formatoNumero.format(ultimoBlue.venta)} ARS
 • Dólar Blue (Compra): $${formatoNumero.format(ultimoBlue.compra)} ARS
 • RIPTE: ${ripteTexto}`;
