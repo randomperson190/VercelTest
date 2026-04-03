@@ -115,7 +115,10 @@ function autoFormato(input) {
     if (v.length > 5) v = v.slice(0,5) + "-" + v.slice(5,9);
 
     input.value = v;
-    input.setSelectionRange(pos, pos);
+
+    let guiones = (v.match(/-/g) || []).length; // ← nuevo
+    let posAjustada = Math.min(pos + guiones, v.length); // ← nuevo
+    input.setSelectionRange(posAjustada, posAjustada); // ← reemplaza el anterior
     actualizarPreview();
   });
 }
@@ -125,7 +128,7 @@ function autoFormato(input) {
 // =======================
 monto.addEventListener("input", (e) => {
   let input = e.target;
-  let pos = input.selectionStart;
+  let posDesdeElFinal = input.value.length - input.selectionStart; // ← cambia esto
 
   let valor = input.value;
   valor = valor.replace(/\./g, ",").replace(/[^0-9,]/g, "");
@@ -138,24 +141,19 @@ monto.addEventListener("input", (e) => {
 
   let entero = partes[0];
   let decimal = partes[1] || "";
-
   let enteroNum = entero ? parseInt(entero, 10) : 0;
   let enteroFormateado = entero ? enteroNum.toLocaleString("es-AR") : "";
-
   decimal = decimal.slice(0,2);
 
   let nuevo = decimal.length > 0 ? `${enteroFormateado},${decimal}` : enteroFormateado;
 
-  let diff = nuevo.length - valor.length;
-
   input.value = nuevo;
-  input.setSelectionRange(pos + diff, pos + diff);
+
+  let newPos = nuevo.length - posDesdeElFinal; // ← y esto
+  input.setSelectionRange(newPos, newPos);
 
   let numero = parseFloat(nuevo.replace(/\./g,"").replace(",","."));
-
-  previewMonto.innerText = isNaN(numero)
-    ? ""
-    : `${new Intl.NumberFormat("es-AR").format(numero)} ARS`;
+  previewMonto.innerText = isNaN(numero) ? "" : `${new Intl.NumberFormat("es-AR").format(numero)} ARS`;
 });
 
 // =======================
