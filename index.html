@@ -1,91 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Argentina Finanzas</title>
-
   <link rel="icon" href="https://flagcdn.com/ar.svg" type="image/svg+xml">
 </head>
 
-<body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
+<body style="font-family:sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; gap:20px;">
 
-<pre id="output">Cargando datos...</pre>
+<h2>Conversión por Inflación</h2>
+
+<input id="monto" placeholder="Monto en pesos">
+<input id="fechaDesde" placeholder="Fecha origen (DDMMYY)">
+<input id="fechaHasta" placeholder="Fecha destino (DDMMYY)">
+
+<button onclick="calcular()">Calcular</button>
+
+<pre id="resultado"></pre>
 
 <script>
-async function cargarDatos() {
-  try {
-    // =========================
-    // 📊 INFLACIÓN
-    // =========================
-    const resInflacion = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
-    const dataInflacion = await resInflacion.json();
-    const ultimaInflacion = dataInflacion[dataInflacion.length - 1];
+let inflacionData = [];
 
-    const fecha = new Date(ultimaInflacion.fecha);
-    const meses = [
-      "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-      "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
-    ];
-    const mesNombre = meses[fecha.getMonth()];
+async function cargarInflacion() {
+  const res = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
+  inflacionData = await res.json();
+}
 
-    // =========================
-    // 💵 DÓLAR BLUE (último)
-    // =========================
-    const resDolar = await fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares");
-    const dataDolar = await resDolar.json();
+function parseFecha(texto) {
+  const d = texto.slice(0,2);
+  const m = texto.slice(2,4);
+  const y = "20" + texto.slice(4,6);
+  return new Date(`${y}-${m}-${d}`);
+}
 
-    const blueItems = dataDolar.filter(d => d.casa === "blue");
-    const ultimoBlue = blueItems[blueItems.length - 1];
+function obtenerIndiceHasta(fecha) {
+  let factor = 1;
 
-    // =========================
-    // 📈 RIPTE (proxy)
-    // =========================
-    let ripteTexto = "No disponible";
+  for (let item of inflacionData) {
+    const f = new Date(item.fecha);
 
-    try {
-      const resRipte = await fetch("/api/ripte");
-      const dataRipte = await resRipte.json();
-
-      if (dataRipte.ripte) {
-        const formatoMoneda = new Intl.NumberFormat("es-AR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        });
-
-        ripteTexto = `$${formatoMoneda.format(dataRipte.ripte)} ARS`;
-      }
-    } catch (e) {
-      console.warn("RIPTE error:", e);
+    if (f <= fecha) {
+      factor *= (1 + item.valor / 100);
     }
+  }
 
-    // =========================
-    // 🎨 FORMATOS
-    // =========================
-    const formatoDecimal = new Intl.NumberFormat("es-AR", {
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1
+  return factor;
+}
+
+function calcular() {
+  try {
+    const monto = parseFloat(document.getElementById("monto").value);
+    const desde = parseFecha(document.getElementById("fechaDesde").value);
+    const hasta = parseFecha(document.getElementById("fechaHasta").value);
+
+    const indiceDesde = obtenerIndiceHasta(desde);
+    const indiceHasta = obtenerIndiceHasta(hasta);
+
+    const resultado = monto * (indiceHasta / indiceDesde);
+
+    const formato = new Intl.NumberFormat("es-AR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     });
 
-    const formatoNumero = new Intl.NumberFormat("es-AR");
+    document.getElementById("resultado").innerText =
+      `$${formato.format(resultado)} ARS`;
 
-    // =========================
-    // 🧾 OUTPUT
-    // =========================
-    const texto =
-`🇦🇷 Argentina Finanzas
-
-• Inflación (Mes de ${mesNombre}): ${formatoDecimal.format(ultimaInflacion.valor)}%
-• Dólar Blue (Venta): $${formatoNumero.format(ultimoBlue.venta)} ARS
-• Dólar Blue (Compra): $${formatoNumero.format(ultimoBlue.compra)} ARS
-• RIPTE: ${ripteTexto}`;
-
-    document.getElementById("output").innerText = texto;
-
-  } catch (error) {
-    console.error(error);
-    document.getElementById("output").innerText = "Error cargando datos";
+  } catch (e) {
+    document.getElementById("resultado").innerText = "Error en los datos";
   }
 }
 
-cargarDatos();
+// cargar datos al iniciar
+cargarInflacion();
 </script>
 
 </body>
