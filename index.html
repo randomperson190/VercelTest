@@ -1,140 +1,254 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Calculador de Inflación</title>
+  <meta charset="UTF-8">
+  <title>Argentina Finanzas</title>
+  <link rel="icon" href="https://flagcdn.com/ar.svg">
 
-<style>
+  <style>
     body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        margin-top: 40px;
+      font-family: Arial;
+      padding: 20px;
+      font-size: 16px;
     }
 
-    .container {
-        width: 320px;
+    .fila {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    h2 {
-        width: 100%;
-        text-align: center;
-        margin-bottom: 20px;
+    input {
+      padding: 5px;
+      width: 180px;
+      font-size: 16px;
     }
 
-    input, button {
-        width: 100%;
-        padding: 10px;
-        margin: 5px 0;
-        font-size: 16px;
-        box-sizing: border-box;
+    .preview {
+      color: gray;
+      white-space: nowrap;
     }
-</style>
+
+    button {
+      margin-top: 15px;
+      padding: 6px 12px;
+      font-size: 16px;
+    }
+
+    h1 {
+      font-size: 16px;
+      text-decoration: underline;
+      margin-bottom: 15px;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h2>Calculador de Inflación</h2>
+<div id="datos">Cargando datos...</div>
 
-    <input type="text" id="fechaInicio" placeholder="Fecha inicio (dd-mm-yyyy)">
-    <input type="text" id="fechaFin" placeholder="Fecha fin (dd-mm-yyyy)">
-    <input type="text" id="monto" placeholder="Monto en ARS">
+<h1>Calculadora de Inflación</h1>
 
-    <button onclick="calcular()">Calcular</button>
+<div style="display:flex; flex-direction:column; gap:12px; width:360px;">
 
-    <p id="resultado"></p>
+  <div class="fila">
+    <div>Monto en Pesos Argentinos:</div>
+    <input id="monto" placeholder="Ej: 1000">
+    <div id="previewMonto" class="preview"></div>
+  </div>
+
+  <div class="fila">
+    <div>Fecha de Origen (DDMMYYYY):</div>
+    <input id="fechaOrigen" placeholder="01012025">
+    <div id="previewOrigen" class="preview"></div>
+  </div>
+
+  <div class="fila">
+    <div>Fecha de Destino (DDMMYYYY):</div>
+    <input id="fechaDestino" placeholder="01032025">
+    <div id="previewDestino" class="preview"></div>
+  </div>
+
 </div>
 
+<button onclick="calcular()">Calcular</button>
+
+<div id="resultado" style="margin-top:15px;"></div>
+
 <script>
-// ==========================
-// FORMATO FECHA (CORREGIDO)
-// ==========================
-function formatearFecha(input) {
-    let valor = input.value.replace(/\D/g, '').slice(0, 8);
 
-    let partes = [];
-    if (valor.length >= 2) partes.push(valor.slice(0,2));
-    if (valor.length >= 4) partes.push(valor.slice(2,4));
-    if (valor.length > 4) partes.push(valor.slice(4,8));
+const meses = [
+  "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+];
 
-    input.value = partes.join('-');
+let inflacionData = [];
+
+/* =========================
+   FETCH DATOS
+========================= */
+
+async function cargarDatos() {
+  try {
+    const inflacionRes = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
+    inflacionData = await inflacionRes.json();
+
+    const dolarRes = await fetch("https://dolarify-api.vercel.app/api/dolar");
+    const dolar = await dolarRes.json();
+
+    const ripteRes = await fetch("https://api.argly.com.ar/api/ripte");
+    const ripte = await ripteRes.json();
+
+    const ultima = inflacionData[inflacionData.length - 1];
+
+    document.getElementById("datos").innerHTML = `
+• Inflación (Mes de ${meses[new Date(ultima.fecha).getMonth()]}): ${ultima.valor.toString().replace(".", ",")}%<br>
+• Dólar Blue (Venta): $${formatear(dolar.dolarBlue.venta)} ARS<br>
+• Dólar Blue (Compra): $${formatear(dolar.dolarBlue.compra)} ARS<br>
+• RIPTE: $${formatear(ripte.valor)} ARS
+    `;
+
+  } catch (e) {
+    document.getElementById("datos").innerText = "Error cargando datos";
+    console.error(e);
+  }
 }
 
-// ==========================
-// FORMATO MONTO (ESTABLE)
-// ==========================
-const montoInput = document.getElementById("monto");
+/* =========================
+   FORMATOS
+========================= */
 
-montoInput.addEventListener("input", function () {
-    let cursor = this.selectionStart;
+function formatear(num) {
+  return new Intl.NumberFormat("es-AR").format(num);
+}
 
-    // Permitir solo números
-    let valor = this.value.replace(/\D/g, '');
+/* =========================
+   MONTO INPUT
+========================= */
 
-    if (valor === "") {
-        this.value = "";
-        return;
+const monto = document.getElementById("monto");
+const previewMonto = document.getElementById("previewMonto");
+
+monto.addEventListener("input", (e) => {
+  let limpio = e.target.value.replace(/\D/g, "");
+
+  if (!limpio) {
+    monto.value = "";
+    previewMonto.innerText = "";
+    return;
+  }
+
+  let numero = parseInt(limpio, 10);
+  let formateado = formatear(numero);
+
+  monto.value = formateado;
+
+  // cursor al final
+  monto.setSelectionRange(monto.value.length, monto.value.length);
+
+  previewMonto.innerText = formateado + " ARS";
+});
+
+/* =========================
+   FECHAS
+========================= */
+
+function autoFormato(input, preview) {
+  input.addEventListener("input", () => {
+    let v = input.value.replace(/\D/g, "");
+
+    let nuevo = "";
+    if (v.length > 0) nuevo = v.slice(0,2);
+    if (v.length >= 3) nuevo += "-" + v.slice(2,4);
+    if (v.length >= 5) nuevo += "-" + v.slice(4,8);
+
+    input.value = nuevo;
+
+    input.setSelectionRange(input.value.length, input.value.length);
+
+    actualizarPreview();
+  });
+}
+
+function parseFecha(str) {
+  let [d,m,y] = str.split("-");
+  return new Date(y, m-1, d);
+}
+
+function fechaTexto(f) {
+  return `${f.getDate()} de ${meses[f.getMonth()]} de ${f.getFullYear()}`;
+}
+
+const fechaOrigen = document.getElementById("fechaOrigen");
+const fechaDestino = document.getElementById("fechaDestino");
+
+const previewOrigen = document.getElementById("previewOrigen");
+const previewDestino = document.getElementById("previewDestino");
+
+autoFormato(fechaOrigen, previewOrigen);
+autoFormato(fechaDestino, previewDestino);
+
+function actualizarPreview() {
+  try {
+    if (fechaOrigen.value.length === 10) {
+      previewOrigen.innerText = fechaTexto(parseFecha(fechaOrigen.value));
     }
+    if (fechaDestino.value.length === 10) {
+      previewDestino.innerText = fechaTexto(parseFecha(fechaDestino.value));
+    }
+  } catch {}
+}
 
-    // Formatear miles
-    let formateado = new Intl.NumberFormat('es-AR').format(valor);
+/* =========================
+   CALCULO INFLACION
+========================= */
 
-    this.value = formateado;
-
-    // Restaurar cursor (clave para que no se rompa)
-    this.setSelectionRange(this.value.length, this.value.length);
-});
-
-// ==========================
-// EVENTOS FECHA
-// ==========================
-document.getElementById("fechaInicio").addEventListener("input", function() {
-    formatearFecha(this);
-});
-
-document.getElementById("fechaFin").addEventListener("input", function() {
-    formatearFecha(this);
-});
-
-// ==========================
-// FUNCION CALCULAR
-// ==========================
 function calcular() {
-    let monto = document.getElementById("monto").value.replace(/\./g, '');
-    let resultado = document.getElementById("resultado");
+  try {
+    let montoBase = parseInt(monto.value.replace(/\./g,""));
+    let f1 = parseFecha(fechaOrigen.value);
+    let f2 = parseFecha(fechaDestino.value);
 
-    if (!monto) {
-        resultado.innerText = "Ingresá un monto válido";
-        return;
+    let invertido = false;
+    if (f1 > f2) {
+      [f1, f2] = [f2, f1];
+      invertido = true;
     }
 
-    resultado.innerText = "Cálculo pendiente con API...";
+    let valor = montoBase;
+
+    for (let i = 0; i < inflacionData.length; i++) {
+      let fechaMes = new Date(inflacionData[i].fecha);
+      let tasa = inflacionData[i].valor;
+
+      let inicioMes = new Date(fechaMes.getFullYear(), fechaMes.getMonth(), 1);
+      let finMes = new Date(fechaMes.getFullYear(), fechaMes.getMonth()+1, 0);
+
+      let inicio = new Date(Math.max(f1, inicioMes));
+      let fin = new Date(Math.min(f2, finMes));
+
+      if (inicio <= fin) {
+        let dias = (fin - inicio) / (1000*60*60*24) + 1;
+        let totalMes = finMes.getDate();
+
+        let tasaDiaria = Math.pow(1 + tasa/100, 1/totalMes);
+        valor *= Math.pow(tasaDiaria, dias);
+      }
+    }
+
+    if (invertido) valor = montoBase / (valor / montoBase);
+
+    document.getElementById("resultado").innerText =
+      "Resultado: " + formatear(Math.round(valor)) + " ARS";
+
+  } catch {
+    document.getElementById("resultado").innerText = "Error en cálculo";
+  }
 }
 
-// ==========================
-// FUNCIONES APIs (QUE TENÍAS)
-// ==========================
+/* ========================= */
 
-// Inflación
-async function obtenerInflacion() {
-    const res = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
-    const data = await res.json();
-    return data;
-}
-
-// Dólar
-async function obtenerDolar() {
-    const res = await fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares");
-    const data = await res.json();
-    return data;
-}
-
-// RIPTE (ejemplo si tenías endpoint)
-async function obtenerRipte() {
-    const res = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/ripte");
-    const data = await res.json();
-    return data;
-}
+cargarDatos();
 
 </script>
 
