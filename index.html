@@ -167,6 +167,40 @@ function calcular() {
   }
 }
 
+  const montoInput = document.getElementById("monto");
+
+montoInput.addEventListener("input", () => {
+  let valor = montoInput.value;
+
+  // Permitir solo números y coma
+  valor = valor.replace(/[^0-9,]/g, "");
+
+  // Separar parte entera y decimal
+  let partes = valor.split(",");
+
+  let entero = partes[0];
+  let decimal = partes[1] || "";
+
+  // Formatear miles
+  if (entero.length > 0) {
+    entero = parseInt(entero, 10).toLocaleString("es-AR");
+  }
+
+  // Limitar decimales a 2
+  decimal = decimal.slice(0, 2);
+
+  // Reconstruir valor
+  montoInput.value = decimal.length > 0 ? `${entero},${decimal}` : entero;
+
+  // Actualizar preview gris
+  let numero = parseFloat(
+    montoInput.value.replace(/\./g, "").replace(",", ".")
+  );
+
+  previewMonto.innerText = isNaN(numero)
+    ? ""
+    : `${new Intl.NumberFormat("es-AR").format(numero)} ARS`;
+});
 // INIT
 autoFormato(fechaDesde);
 autoFormato(fechaHasta);
