@@ -22,25 +22,25 @@ font-size:16px;
 
 <div style="display:flex; flex-direction:column; gap:12px; width:340px;">
 
-<label>Monto en Pesos Argentinos:</label>
-<div style="display:flex;">
-<input id="monto" style="width:100%;">
-<span id="previewMonto" style="color:gray; margin-left:10px;"></span>
-</div>
+  <label>Monto en Pesos Argentinos:</label>
+  <div style="display:flex; align-items:center;">
+    <input id="monto" style="width:100%;" placeholder="0">
+    <span id="previewMonto" style="color:gray; margin-left:10px; white-space:nowrap; min-width:90px; font-size:14px;"></span>
+  </div>
 
-<label>Fecha de Origen (DDMMYYYY):</label>
-<div style="display:flex;">
-<input id="fechaDesde" maxlength="10" style="width:100%;">
-<span id="previewDesde" style="color:gray; margin-left:10px;"></span>
-</div>
+  <label>Fecha de Origen (DDMMYYYY):</label>
+  <div style="display:flex; align-items:center;">
+    <input id="fechaDesde" maxlength="10" style="width:100%;">
+    <span id="previewDesde" style="color:gray; margin-left:10px; white-space:nowrap; min-width:130px; font-size:14px;"></span>
+  </div>
 
-<label>Fecha de Destino (DDMMYYYY):</label>
-<div style="display:flex;">
-<input id="fechaHasta" maxlength="10" style="width:100%;">
-<span id="previewHasta" style="color:gray; margin-left:10px;"></span>
-</div>
+  <label>Fecha de Destino (DDMMYYYY):</label>
+  <div style="display:flex; align-items:center;">
+    <input id="fechaHasta" maxlength="10" style="width:100%;">
+    <span id="previewHasta" style="color:gray; margin-left:10px; white-space:nowrap; min-width:130px; font-size:14px;"></span>
+  </div>
 
-<button onclick="calcular()">Calcular</button>
+  <button onclick="calcular()">Calcular</button>
 
 </div>
 
@@ -126,34 +126,23 @@ function autoFormato(input) {
 // =======================
 // FORMATO MONTO
 // =======================
-monto.addEventListener("input", (e) => {
-  let input = e.target;
-  let posDesdeElFinal = input.value.length - input.selectionStart; // ← cambia esto
+monto.addEventListener("input", () => {
+  // Guardar valor crudo sin formatear
+  let raw = monto.value.replace(/[^\d]/g, "");
 
-  let valor = input.value;
-  valor = valor.replace(/\./g, ",").replace(/[^0-9,]/g, "");
-
-  let partes = valor.split(",");
-  if (partes.length > 2) {
-    valor = partes[0] + "," + partes.slice(1).join("");
-    partes = valor.split(",");
+  if (raw === "") {
+    monto.value = "";
+    previewMonto.innerText = "";
+    return;
   }
 
-  let entero = partes[0];
-  let decimal = partes[1] || "";
-  let enteroNum = entero ? parseInt(entero, 10) : 0;
-  let enteroFormateado = entero ? enteroNum.toLocaleString("es-AR") : "";
-  decimal = decimal.slice(0,2);
+  // Convertir a número y formatear con puntos de miles (sin decimales en el input)
+  let numero = parseInt(raw, 10);
+  let formateado = numero.toLocaleString("es-AR");
 
-  let nuevo = decimal.length > 0 ? `${enteroFormateado},${decimal}` : enteroFormateado;
+  monto.value = formateado;
 
-  input.value = nuevo;
-
-  let newPos = nuevo.length - posDesdeElFinal; // ← y esto
-  input.setSelectionRange(newPos, newPos);
-
-  let numero = parseFloat(nuevo.replace(/\./g,"").replace(",","."));
-  previewMonto.innerText = isNaN(numero) ? "" : `${new Intl.NumberFormat("es-AR").format(numero)} ARS`;
+  previewMonto.innerText = formateado + " ARS";
 });
 
 // =======================
@@ -211,17 +200,18 @@ function factorEntreFechas(desde, hasta) {
 // =======================
 function calcular() {
   try {
-    const montoVal = parseFloat(monto.value.replace(/\./g,"").replace(",","."));
+    // Limpiar puntos de miles del formato es-AR
+    const montoVal = parseFloat(monto.value.replace(/\./g, "").replace(",", "."));
     const desde = parseFecha(fechaDesde.value);
     const hasta = parseFecha(fechaHasta.value);
 
     const resultado = montoVal * factorEntreFechas(desde, hasta);
 
-    const f = new Intl.NumberFormat("es-AR",{minimumFractionDigits:2});
+    const f = new Intl.NumberFormat("es-AR", {minimumFractionDigits:2});
     document.getElementById("resultado").innerText = `$${f.format(resultado)} ARS`;
 
   } catch {
-    resultado.innerText = "Error";
+    document.getElementById("resultado").innerText = "Error";
   }
 }
 
