@@ -20,29 +20,30 @@ font-size:16px;
 
 <h1 style="text-decoration: underline;">Calculadora de Inflación</h1>
 
-<div style="display:flex; flex-direction:column; gap:12px; width:340px;">
+<div style="display:flex; flex-direction:column; gap:12px; width:340px; max-width:100%; box-sizing:border-box;">
 
-  <label>Monto en Pesos Argentinos:</label>
-  <div style="display:flex; align-items:center;">
-    <input id="monto" style="width:100%;" placeholder="0">
-    <span id="previewMonto" style="color:gray; margin-left:10px; white-space:nowrap; min-width:90px; font-size:14px;"></span>
+  <label style="font-size:16px;">Monto en Pesos Argentinos:</label>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <input id="monto" placeholder="0" style="min-width:0; flex:1; box-sizing:border-box;">
+    <span id="previewMonto" style="color:gray; white-space:nowrap; font-size:16px; flex-shrink:0;"></span>
   </div>
 
-  <label>Fecha de Origen (DDMMYYYY):</label>
-  <div style="display:flex; align-items:center;">
-    <input id="fechaDesde" maxlength="10" style="width:100%;">
-    <span id="previewDesde" style="color:gray; margin-left:10px; white-space:nowrap; min-width:130px; font-size:14px;"></span>
+  <label style="font-size:16px;">Fecha de Origen (DDMMYYYY):</label>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <input id="fechaDesde" maxlength="10" style="min-width:0; flex:1; box-sizing:border-box;">
+    <span id="previewDesde" style="color:gray; white-space:nowrap; font-size:16px; flex-shrink:0;"></span>
   </div>
 
-  <label>Fecha de Destino (DDMMYYYY):</label>
-  <div style="display:flex; align-items:center;">
-    <input id="fechaHasta" maxlength="10" style="width:100%;">
-    <span id="previewHasta" style="color:gray; margin-left:10px; white-space:nowrap; min-width:130px; font-size:14px;"></span>
+  <label style="font-size:16px;">Fecha de Destino (DDMMYYYY):</label>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <input id="fechaHasta" maxlength="10" style="min-width:0; flex:1; box-sizing:border-box;">
+    <span id="previewHasta" style="color:gray; white-space:nowrap; font-size:16px; flex-shrink:0;"></span>
   </div>
 
   <button onclick="calcular()">Calcular</button>
 
 </div>
+
 
 <pre id="resultado"></pre>
 
