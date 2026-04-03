@@ -6,33 +6,114 @@
   <link rel="icon" href="https://flagcdn.com/ar.svg" type="image/svg+xml">
 </head>
 
-<body style="font-family:sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; gap:20px;">
+<body style="font-family:sans-serif; display:flex; flex-direction:column; align-items:center; gap:25px; padding-top:40px;">
 
-<h2>Conversión por Inflación</h2>
+<!-- ========================= -->
+<!-- 📊 INDICADORES -->
+<!-- ========================= -->
+
+<pre id="output">Cargando datos...</pre>
+
+<!-- ========================= -->
+<!-- 🧮 CALCULADORA -->
+<!-- ========================= -->
+
+<h3>Conversión por Inflación</h3>
 
 <input id="monto" placeholder="Monto en pesos">
-<input id="fechaDesde" placeholder="Fecha origen (DDMMYY)">
-<input id="fechaHasta" placeholder="Fecha destino (DDMMYY)">
+<input id="fechaDesde" placeholder="Fecha origen (DDMMYYYY)">
+<input id="fechaHasta" placeholder="Fecha destino (DDMMYYYY)">
 
 <button onclick="calcular()">Calcular</button>
 
 <pre id="resultado"></pre>
 
 <script>
+// =========================
+// 📊 VARIABLES GLOBALES
+// =========================
 let inflacionData = [];
 
-async function cargarInflacion() {
-  const res = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
-  inflacionData = await res.json();
+// =========================
+// 📊 CARGAR TODO
+// =========================
+async function cargarTodo() {
+  try {
+    // ---------- INFLACIÓN ----------
+    const resInflacion = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
+    inflacionData = await resInflacion.json();
+    const ultimaInflacion = inflacionData[inflacionData.length - 1];
+
+    const fecha = new Date(ultimaInflacion.fecha);
+    const meses = [
+      "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+      "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+    ];
+    const mesNombre = meses[fecha.getMonth()];
+
+    // ---------- DÓLAR ----------
+    const resDolar = await fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares");
+    const dataDolar = await resDolar.json();
+
+    const blueItems = dataDolar.filter(d => d.casa === "blue");
+    const ultimoBlue = blueItems[blueItems.length - 1];
+
+    // ---------- RIPTE ----------
+    let ripteTexto = "No disponible";
+
+    try {
+      const resRipte = await fetch("/api/ripte");
+      const dataRipte = await resRipte.json();
+
+      if (dataRipte.ripte) {
+        const formatoMoneda = new Intl.NumberFormat("es-AR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+
+        ripteTexto = `$${formatoMoneda.format(dataRipte.ripte)} ARS`;
+      }
+    } catch {}
+
+    // ---------- FORMATOS ----------
+    const formatoDecimal = new Intl.NumberFormat("es-AR", {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    });
+
+    const formatoNumero = new Intl.NumberFormat("es-AR");
+
+    // ---------- OUTPUT ----------
+    const texto =
+`• Inflación (Mes de ${mesNombre}): ${formatoDecimal.format(ultimaInflacion.valor)}%
+• Dólar Blue (Venta): $${formatoNumero.format(ultimoBlue.venta)} ARS
+• Dólar Blue (Compra): $${formatoNumero.format(ultimoBlue.compra)} ARS
+• RIPTE: ${ripteTexto}`;
+
+    document.getElementById("output").innerText = texto;
+
+  } catch (error) {
+    console.error(error);
+    document.getElementById("output").innerText = "Error cargando datos";
+  }
 }
 
+// =========================
+// 📅 PARSE FECHA DDMMYYYY
+// =========================
 function parseFecha(texto) {
+  if (texto.length !== 8) throw "Formato inválido";
+
   const d = texto.slice(0,2);
   const m = texto.slice(2,4);
-  const y = "20" + texto.slice(4,6);
+  const y = texto.slice(4,8);
+
   return new Date(`${y}-${m}-${d}`);
 }
 
+// =========================
+// 📊 ÍNDICE ACUMULADO
+// =========================
 function obtenerIndiceHasta(fecha) {
   let factor = 1;
 
@@ -47,6 +128,9 @@ function obtenerIndiceHasta(fecha) {
   return factor;
 }
 
+// =========================
+// 🧮 CALCULAR
+// =========================
 function calcular() {
   try {
     const monto = parseFloat(document.getElementById("monto").value);
@@ -71,8 +155,10 @@ function calcular() {
   }
 }
 
-// cargar datos al iniciar
-cargarInflacion();
+// =========================
+// 🚀 INIT
+// =========================
+cargarTodo();
 </script>
 
 </body>
