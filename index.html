@@ -15,7 +15,10 @@
     align-items: center;
     gap: 0px;
     padding: 20px;
+    margin-top: 0px;
     font-size: 16px;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
   input { 
     height: 21px; 
@@ -28,14 +31,21 @@
     padding: 0 5px;
   }
   input::placeholder { color: #6666cc; }
-  h1 { text-decoration: underline; font-size: 20px; padding: 0; margin: 4px; color: white; }
+  h1 { text-decoration: underline; font-size: 20px; padding: 0; margin: 4px; color: white; text-align: center; width: 100%; max-width: 425px; }
   
   label { 
     margin-bottom: 2px; 
     display: block;
   }
 
-  pre { padding: 0; margin: 3px; color: white; }
+  pre { 
+    padding: 0; 
+    margin: 3px; 
+    color: white; 
+    white-space: pre-wrap; 
+    word-wrap: break-word;
+    text-align: left; 
+  }
   
   button { 
     cursor: pointer; 
@@ -51,10 +61,12 @@
   
   .preview-fecha {
     color: gray;
-    white-space: nowrap;
     font-size: 11px;
-    flex-shrink: 0;
+    flex-shrink: 1;
     margin-left: 8px;
+    white-space: normal; 
+    word-wrap: break-word;
+    text-align: left;
   }
 
   .flag {
@@ -81,6 +93,11 @@
 
   #resultado, #resultadoDolar, #resultadoPesosADolar, #resultadoDolarAPesos, #lineaEfectivo, #lineaCuotas, #errorCuotas {
     color: #ff66cc;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    text-align: left; /* Alineación a la izquierda aplicada */
+    width: 100%;
+    max-width: 425px;
   }
 
   .font-error { font-size: 14px !important; }
@@ -93,6 +110,8 @@
 
   #containerPesosADolar, #containerDolarAPesos, #containerCuotas {
     margin-bottom: 0px !important;
+    width: 100%;
+    max-width: 425px;
   }
 </style>
 </head>
@@ -119,9 +138,9 @@
     <input id="fechaHasta" inputmode="numeric" placeholder="01-01-2020" maxlength="8" style="flex:1; padding: 10px">
     <span id="previewHastaPesos" class="preview-fecha" style="display: none;"></span>
   </div>
-  <button onclick="calcular()">Calcular</button>
+  <button id="btnCalcularPesos" onclick="calcular()">Calcular</button>
 </div>
-<div id="resultado" style="margin:4px; font-size:14px; text-align:center;"></div>
+<div id="resultado" style="margin:4px; font-size:14px; max-width: 425px;"></div>
 
 <h1>Calculadora de Inflación (en Dólares)</h1>
 <div style="width:425px; max-width:100%; margin:4px;">
@@ -140,9 +159,9 @@
     <input id="fechaHastaDolar" inputmode="numeric" placeholder="01-01-2020" maxlength="8" style="flex:1; padding: 10px">
     <span id="previewHastaDolar" class="preview-fecha" style="display: none;"></span>
   </div>
-  <button onclick="calcularDolar()">Calcular</button>
+  <button id="btnCalcularDolar" onclick="calcularDolar()">Calcular</button>
 </div>
-<div id="resultadoDolar" style="margin:4px; font-size:14px; text-align:center;"></div>
+<div id="resultadoDolar" style="margin:4px; font-size:14px; max-width: 425px;"></div>
 
 <h1>Calculadora de Pesos / Dólares</h1>
 <div style="width:425px; max-width:100%; margin:4px;">
@@ -151,7 +170,7 @@
     <input id="montoPesosADolar" inputmode="decimal" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
     <span style="color:#6666cc; font-style:italic; font-size:12px;">ARS</span>
   </div>
-  <button onclick="calcularPesosADolar()">Calcular</button>
+  <button id="btnCalcularPAD" onclick="calcularPesosADolar()">Calcular</button>
 </div>
 <div id="containerPesosADolar" style="display:none; margin:4px;"><pre id="resultadoPesosADolar"></pre></div>
 
@@ -161,7 +180,7 @@
     <input id="montoDolarAPesos" inputmode="decimal" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
     <span style="color:#6666cc; font-style:italic; font-size:12px;">USD</span>
   </div>
-  <button onclick="calcularDolarAPesos()">Calcular</button>
+  <button id="btnCalcularDAP" onclick="calcularDolarAPesos()">Calcular</button>
 </div>
 <div id="containerDolarAPesos" style="display:none; margin:4px;"><pre id="resultadoDolarAPesos"></pre></div>
 
@@ -182,17 +201,21 @@
     <input id="cantCuotas" inputmode="numeric" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
     <span style="color:#6666cc; font-style:italic; font-size:12px;">Cuotas</span>
   </div>
-  <button onclick="calcularCuotas()">Calcular</button>
+  <button id="btnCalcularCuotas" onclick="calcularCuotas()">Calcular</button>
 </div>
 <div id="containerCuotas" style="display:none; margin:4px; text-align: center;">
     <div id="errorCuotas" style="display:none; font-size:14px;">???</div>
     <div id="wrapperLineas">
-        <pre id="lineaEfectivo" style="text-align:left; font-size:10px; margin:0;"></pre>
-        <pre id="lineaCuotas" style="text-align:left; font-size:10px; margin:0;"></pre>
+        <pre id="lineaEfectivo" style="font-size:10px; margin:0;"></pre>
+        <pre id="lineaCuotas" style="font-size:10px; margin:0;"></pre>
     </div>
 </div>
 
 <script>
+/**
+ * Programado como Gemini Pro Abril 2026
+ */
+
 let inflacionData = [];
 let blueVenta = null, blueCompra = null;
 let cpiData = [];
@@ -222,16 +245,21 @@ async function cargarTodo() {
     const blue = dDolar.filter(d => d.casa === "blue");
     const uBlue = blue[blue.length - 1];
     blueVenta = uBlue.venta; blueCompra = uBlue.compra;
+    const blueIntermedio = (blueVenta + blueCompra) / 2;
 
     let ripteTexto = "No disponible";
+    let ripteDolarTexto = "No disponible";
     try {
-      const r = await fetch("/api/ripte"); // ACÁ SE USA EL PROXY
+      const r = await fetch("/api/ripte"); 
       const d = await r.json();
-      if(d.ripte) ripteTexto = `$${fGral.format(d.ripte)} ARS`;
+      if(d.ripte) {
+        ripteTexto = `$${fGral.format(d.ripte)} ARS`;
+        ripteDolarTexto = `${fGral.format(d.ripte / blueIntermedio)} USD`;
+      }
     } catch {}
 
     try {
-      const resCpi = await fetch("/api/cpi"); // ACÁ SE USA EL PROXY FRED
+      const resCpi = await fetch("/api/cpi"); 
       const dataCpi = await resCpi.json();
       cpiData = dataCpi.observations.filter(o => o.value !== ".").map(o => ({
           fecha: o.date,
@@ -246,9 +274,10 @@ async function cargarTodo() {
 • TNA Diaria (Supuesta Pagada): ${fGral.format(tnaSupuestaD)}%
 • TNA Mensual (Última Inflación): ${fGral.format(tnaM)}%
 • Dólar Blue (Venta): $${fNum.format(uBlue.venta)} ARS
-• Dólar Blue (Intermedio): $${fNum.format((uBlue.venta + uBlue.compra) / 2)} ARS
+• Dólar Blue (Intermedio): $${fNum.format(blueIntermedio)} ARS
 • Dólar Blue (Compra): $${fNum.format(uBlue.compra)} ARS
-• RIPTE: ${ripteTexto}`;
+• RIPTE: ${ripteTexto}
+• RIPTE (En Dólares): ${ripteDolarTexto}`;
   } catch { document.getElementById("output").innerText = "Error cargando datos"; }
 }
 
@@ -261,25 +290,37 @@ function formatInputComa(e) {
   e.target.value = (ent === "" ? "" : parseInt(ent, 10).toLocaleString("es-AR")) + dec;
 }
 
+function setupEnterKey(inputElement, buttonId) {
+    inputElement.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            document.getElementById(buttonId).click();
+        }
+    });
+}
+
+window.onload = () => {
+    cargarTodo();
+    setupEnterKey(document.getElementById("fechaHasta"), "btnCalcularPesos");
+    setupEnterKey(document.getElementById("fechaHastaDolar"), "btnCalcularDolar");
+    setupEnterKey(document.getElementById("montoPesosADolar"), "btnCalcularPAD");
+    setupEnterKey(document.getElementById("montoDolarAPesos"), "btnCalcularDAP");
+    setupEnterKey(document.getElementById("cantCuotas"), "btnCalcularCuotas");
+};
+
 [monto, montoDolar, montoCuotas, descEfectivo, cantCuotas, montoPesosADolar, montoDolarAPesos].forEach(i => i.addEventListener("input", formatInputComa));
 
 function generarPreview(txt, minFecha) {
   if (txt.length < 2) return "";
   const d = parseInt(txt.slice(0,2));
   if (d < 1 || d > 31) return "¡Fecha Inválida!";
-  
   if (txt.length < 4) return `${d}`;
-  
   const m = parseInt(txt.slice(2,4));
   if (m < 1 || m > 12) return "¡Fecha Inválida!";
-  
   let res = `${d} de ${mesesArr[m-1]}`;
-  
   if (txt.length === 8) {
     const y = parseInt(txt.slice(4,8));
     const fechaIngresada = new Date(y, m-1, d);
     const ahora = new Date();
-    
     if (fechaIngresada > ahora) return "¡Fecha Inválida! (Fecha futura incierta)";
     if (minFecha && fechaIngresada < minFecha) {
         const diaMin = minFecha.getDate().toString().padStart(2, '0');
@@ -323,15 +364,12 @@ function parseLocal(val) { return parseFloat(val.replace(/\./g, "").replace(",",
 function getFactor(data, d, h, isIndex = false) {
   if (data.length === 0) return null;
   if (d > h) return 1 / getFactor(data, h, d, isIndex);
-  
-  // Lógica CPI: División de índices en lugar de suma de porcentajes
   if (isIndex) {
     const f1Node = data.find(i => new Date(i.fecha) >= d);
     const f2Node = data.slice().reverse().find(i => new Date(i.fecha) <= h);
     if (f1Node && f2Node) return f2Node.valor / f1Node.valor;
     return 1;
   }
-
   let f = 1;
   data.forEach(i => {
     let date = new Date(i.fecha);
@@ -349,7 +387,7 @@ function calcular() {
   const f1 = new Date(fechaDesde.value.slice(4), fechaDesde.value.slice(2,4)-1, fechaDesde.value.slice(0,2));
   const f2 = new Date(fechaHasta.value.slice(4), fechaHasta.value.slice(2,4)-1, fechaHasta.value.slice(0,2));
   const fact = getFactor(inflacionData, f1, f2);
-  el.innerText = (fact === null || isNaN(fact)) ? "???" : `$${fGral.format(v * fact)} ARS`;
+  el.innerText = (fact === null || isNaN(fact)) ? "???" : `• $${fGral.format(v * fact)} ARS`;
 }
 
 function calcularDolar() {
@@ -360,8 +398,8 @@ function calcularDolar() {
   }
   const f1 = new Date(fechaDesdeDolar.value.slice(4), fechaDesdeDolar.value.slice(2,4)-1, fechaDesdeDolar.value.slice(0,2));
   const f2 = new Date(fechaHastaDolar.value.slice(4), fechaHastaDolar.value.slice(2,4)-1, fechaHastaDolar.value.slice(0,2));
-  const fact = getFactor(cpiData, f1, f2, true); // True para habilitar lógica de índice
-  el.innerText = (fact === null || isNaN(fact)) ? "???" : `$${fGral.format(v * fact)} USD`;
+  const fact = getFactor(cpiData, f1, f2, true);
+  el.innerText = (fact === null || isNaN(fact)) ? "???" : `• $${fGral.format(v * fact)} USD`;
 }
 
 function calcularPesosADolar() {
@@ -402,24 +440,22 @@ function calcularCuotas() {
   const err = document.getElementById("errorCuotas");
   const wrap = document.getElementById("wrapperLineas");
   const container = document.getElementById("containerCuotas");
-
   const m = parseLocal(montoCuotas.value);
   container.style.display = "block";
 
   if (!montoCuotas.value.trim() || m === 0) {
     err.style.display = "block";
     wrap.style.display = "none";
+    setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 50);
     return;
   }
 
   err.style.display = "none";
   wrap.style.display = "block";
-
   const d = descEfectivo.value === "" ? 0 : parseLocal(descEfectivo.value);
   let c = cantCuotas.value === "" ? 0 : parseInt(cantCuotas.value.replace(/\./g, ""));
   const montoDesc = m * (1 - d/100);
   let valorPresenteTotal = 0;
-  
   if (c <= 0) { valorPresenteTotal = m; } 
   else {
     const valorCuota = m / c;
@@ -428,12 +464,10 @@ function calcularCuotas() {
     }
   }
 
-  elEfe.innerText = `• ${fNum.format(m)} ARS con ${d}% de descuento equivale a ${fGral.format(montoDesc)} ARS`;
+  elEfe.innerText = `• ${fNum.format(m)} ARS con ${d}% de descuento equivalen a ${fGral.format(montoDesc)} ARS`;
   elCuo.innerText = `• ${fNum.format(m)} ARS con ${c} cuotas sin interés equivalen a ${fGral.format(valorPresenteTotal)} ARS`;
-
   elEfe.classList.remove("ganador"); 
   elCuo.classList.remove("ganador");
-
   const diff = Math.abs(montoDesc - valorPresenteTotal);
   if (diff < 0.01) {
     elEfe.classList.add("ganador"); elCuo.classList.add("ganador");
@@ -442,9 +476,10 @@ function calcularCuotas() {
   } else {
     elCuo.classList.add("ganador");
   }
+  setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }, 50);
 }
-
-cargarTodo();
 </script>
 </body>
 </html>
