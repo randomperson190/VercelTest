@@ -106,17 +106,17 @@
 <div style="width:425px; max-width:100%; margin:4px;">
   <label>Monto en Pesos Argentinos <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/ar.svg">)</span>:</label>
   <div class="input-container">
-    <input id="monto" placeholder="0" style="flex:1; border:none; outline:none; background:transparent; padding: 5px">
+    <input id="monto" inputmode="decimal" placeholder="0" style="flex:1; border:none; outline:none; background:transparent; padding: 5px">
     <span style="color:#6666cc; font-style:italic; font-size:12px;">ARS</span>
   </div>
   <label>Fecha de Origen <span style="color:gray;">(DDMMYYYY)</span>:</label>
   <div style="display:flex; align-items:center; margin-bottom:4px;">
-    <input id="fechaDesde" placeholder="01-01-2000" maxlength="8" style="flex:1; padding: 10px">
+    <input id="fechaDesde" inputmode="numeric" placeholder="01-01-2000" maxlength="8" style="flex:1; padding: 10px">
     <span id="previewDesdePesos" class="preview-fecha" style="display: none"></span>
   </div>
   <label>Fecha de Destino <span style="color:gray;">(DDMMYYYY)</span>:</label>
   <div style="display:flex; align-items:center;">
-    <input id="fechaHasta" placeholder="01-01-2020" maxlength="8" style="flex:1; padding: 10px">
+    <input id="fechaHasta" inputmode="numeric" placeholder="01-01-2020" maxlength="8" style="flex:1; padding: 10px">
     <span id="previewHastaPesos" class="preview-fecha" style="display: none;"></span>
   </div>
   <button onclick="calcular()">Calcular</button>
@@ -127,17 +127,17 @@
 <div style="width:425px; max-width:100%; margin:4px;">
   <label>Monto en Dólares <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/us.svg">)</span>:</label>
   <div class="input-container">
-    <input id="montoDolar" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
+    <input id="montoDolar" inputmode="decimal" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
     <span style="color:#6666cc; font-style:italic; font-size:12px;">USD</span>
   </div>
   <label>Fecha de Origen <span style="color:gray;">(DDMMYYYY)</span>:</label>
   <div style="display:flex; align-items:center; margin-bottom:4px;">
-    <input id="fechaDesdeDolar" placeholder="01-01-2000" maxlength="8" style="flex:1; padding: 10px">
+    <input id="fechaDesdeDolar" inputmode="numeric" placeholder="01-01-2000" maxlength="8" style="flex:1; padding: 10px">
     <span id="previewDesdeDolar" class="preview-fecha" style="display: none;"></span>
   </div>
   <label>Fecha de Destino <span style="color:gray;">(DDMMYYYY)</span>:</label>
   <div style="display:flex; align-items:center;">
-    <input id="fechaHastaDolar" placeholder="01-01-2020" maxlength="8" style="flex:1; padding: 10px">
+    <input id="fechaHastaDolar" inputmode="numeric" placeholder="01-01-2020" maxlength="8" style="flex:1; padding: 10px">
     <span id="previewHastaDolar" class="preview-fecha" style="display: none;"></span>
   </div>
   <button onclick="calcularDolar()">Calcular</button>
@@ -148,7 +148,7 @@
 <div style="width:425px; max-width:100%; margin:4px;">
   <label>Transformación de Pesos a Dólares <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/ar.svg"> a <img class="flag" src="https://flagcdn.com/us.svg">)</span>:</label>
   <div class="input-container">
-    <input id="montoPesosADolar" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
+    <input id="montoPesosADolar" inputmode="decimal" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
     <span style="color:#6666cc; font-style:italic; font-size:12px;">ARS</span>
   </div>
   <button onclick="calcularPesosADolar()">Calcular</button>
@@ -158,7 +158,7 @@
 <div style="width:425px; max-width:100%; margin:4px;">
   <label>Transformación de Dólares a Pesos <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/us.svg"> a <img class="flag" src="https://flagcdn.com/ar.svg">)</span>:</label>
   <div class="input-container">
-    <input id="montoDolarAPesos" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
+    <input id="montoDolarAPesos" inputmode="decimal" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
     <span style="color:#6666cc; font-style:italic; font-size:12px;">USD</span>
   </div>
   <button onclick="calcularDolarAPesos()">Calcular</button>
@@ -169,17 +169,17 @@
 <div style="width:425px; max-width:100%; margin:4px;">
   <label>Monto de Efectivo <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/ar.svg">)</span>:</label>
   <div class="input-container">
-    <input id="montoCuotas" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
+    <input id="montoCuotas" inputmode="decimal" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
     <span style="color:#6666cc; font-style:italic; font-size:12px;">ARS</span>
   </div>
   <label>Descuento en Efectivo:</label>
   <div class="input-container">
-    <input id="descEfectivo" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
+    <input id="descEfectivo" inputmode="decimal" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
     <span style="color:#6666cc; font-style:italic; font-size:12px;">%</span>
   </div>
   <label>Cantidad de cuotas sin interés:</label>
   <div class="input-container">
-    <input id="cantCuotas" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
+    <input id="cantCuotas" inputmode="numeric" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
     <span style="color:#6666cc; font-style:italic; font-size:12px;">Cuotas</span>
   </div>
   <button onclick="calcularCuotas()">Calcular</button>
@@ -225,14 +225,18 @@ async function cargarTodo() {
 
     let ripteTexto = "No disponible";
     try {
-      const r = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/ripte");
+      const r = await fetch("/api/ripte"); // ACÁ SE USA EL PROXY
       const d = await r.json();
-      if(d.length) ripteTexto = `$${fGral.format(d[d.length-1].valor)} ARS`;
+      if(d.ripte) ripteTexto = `$${fGral.format(d.ripte)} ARS`;
     } catch {}
 
     try {
-      const resCpi = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/cpi");
-      cpiData = (await resCpi.json()).filter(o => o.valor !== ".");
+      const resCpi = await fetch("/api/cpi"); // ACÁ SE USA EL PROXY FRED
+      const dataCpi = await resCpi.json();
+      cpiData = dataCpi.observations.filter(o => o.value !== ".").map(o => ({
+          fecha: o.date,
+          valor: parseFloat(o.value)
+      }));
       if(cpiData.length) minFechaCpi = new Date(cpiData[0].fecha);
     } catch {}
 
@@ -316,9 +320,18 @@ function actualizarPreviews() {
 
 function parseLocal(val) { return parseFloat(val.replace(/\./g, "").replace(",", ".")) || 0; }
 
-function getFactor(data, d, h) {
+function getFactor(data, d, h, isIndex = false) {
   if (data.length === 0) return null;
-  if (d > h) return 1 / getFactor(data, h, d);
+  if (d > h) return 1 / getFactor(data, h, d, isIndex);
+  
+  // Lógica CPI: División de índices en lugar de suma de porcentajes
+  if (isIndex) {
+    const f1Node = data.find(i => new Date(i.fecha) >= d);
+    const f2Node = data.slice().reverse().find(i => new Date(i.fecha) <= h);
+    if (f1Node && f2Node) return f2Node.valor / f1Node.valor;
+    return 1;
+  }
+
   let f = 1;
   data.forEach(i => {
     let date = new Date(i.fecha);
@@ -347,7 +360,7 @@ function calcularDolar() {
   }
   const f1 = new Date(fechaDesdeDolar.value.slice(4), fechaDesdeDolar.value.slice(2,4)-1, fechaDesdeDolar.value.slice(0,2));
   const f2 = new Date(fechaHastaDolar.value.slice(4), fechaHastaDolar.value.slice(2,4)-1, fechaHastaDolar.value.slice(0,2));
-  const fact = getFactor(cpiData, f1, f2);
+  const fact = getFactor(cpiData, f1, f2, true); // True para habilitar lógica de índice
   el.innerText = (fact === null || isNaN(fact)) ? "???" : `$${fGral.format(v * fact)} USD`;
 }
 
