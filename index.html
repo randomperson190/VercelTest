@@ -6,122 +6,148 @@
   <link rel="icon" href="https://flagcdn.com/ar.svg" type="image/svg+xml">
 </head>
 
-<body style="font-family:sans-serif; display:flex; flex-direction:column; align-items:center; gap:25px; padding-top:40px;">
+<body style="
+  font-family:sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:20px;
+  padding:30px;
+">
 
 <!-- ========================= -->
 <!-- 📊 INDICADORES -->
 <!-- ========================= -->
 
-<pre id="output">Cargando datos...</pre>
+<pre id="output" style="font-size:16px;"></pre>
 
 <!-- ========================= -->
 <!-- 🧮 CALCULADORA -->
 <!-- ========================= -->
 
-<h3>Conversión por Inflación</h3>
+<div style="display:flex; flex-direction:column; gap:10px; font-size:16px;">
 
-<input id="monto" placeholder="Monto en pesos">
-<input id="fechaDesde" placeholder="Fecha origen (DDMMYYYY)">
-<input id="fechaHasta" placeholder="Fecha destino (DDMMYYYY)">
+  <label>Monto en Pesos Argentinos:</label>
+  <input id="monto">
 
-<button onclick="calcular()">Calcular</button>
+  <label>Fecha de Origen (DDMMYYYY):</label>
+  <input id="fechaDesde" maxlength="10">
 
-<pre id="resultado"></pre>
+  <label>Fecha de Destino (DDMMYYYY):</label>
+  <input id="fechaHasta" maxlength="10">
+
+  <button onclick="calcular()">Calcular</button>
+
+</div>
+
+<pre id="resultado" style="font-size:16px;"></pre>
 
 <script>
 // =========================
-// 📊 VARIABLES GLOBALES
+// 📊 DATA GLOBAL
 // =========================
 let inflacionData = [];
 
 // =========================
-// 📊 CARGAR TODO
+// 📊 CARGAR DATOS
 // =========================
 async function cargarTodo() {
   try {
-    // ---------- INFLACIÓN ----------
     const resInflacion = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
     inflacionData = await resInflacion.json();
-    const ultimaInflacion = inflacionData[inflacionData.length - 1];
 
-    const fecha = new Date(ultimaInflacion.fecha);
-    const meses = [
-      "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-      "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
-    ];
+    const ultima = inflacionData[inflacionData.length - 1];
+
+    const fecha = new Date(ultima.fecha);
+    const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
     const mesNombre = meses[fecha.getMonth()];
 
-    // ---------- DÓLAR ----------
     const resDolar = await fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares");
     const dataDolar = await resDolar.json();
+    const blue = dataDolar.filter(d => d.casa === "blue");
+    const ultimoBlue = blue[blue.length - 1];
 
-    const blueItems = dataDolar.filter(d => d.casa === "blue");
-    const ultimoBlue = blueItems[blueItems.length - 1];
-
-    // ---------- RIPTE ----------
     let ripteTexto = "No disponible";
-
     try {
-      const resRipte = await fetch("/api/ripte");
-      const dataRipte = await resRipte.json();
+      const r = await fetch("/api/ripte");
+      const d = await r.json();
 
-      if (dataRipte.ripte) {
-        const formatoMoneda = new Intl.NumberFormat("es-AR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        });
-
-        ripteTexto = `$${formatoMoneda.format(dataRipte.ripte)} ARS`;
+      if (d.ripte) {
+        const f = new Intl.NumberFormat("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
+        ripteTexto = `$${f.format(d.ripte)} ARS`;
       }
     } catch {}
 
-    // ---------- FORMATOS ----------
-    const formatoDecimal = new Intl.NumberFormat("es-AR", {
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1
-    });
+    const fDec = new Intl.NumberFormat("es-AR",{minimumFractionDigits:1,maximumFractionDigits:1});
+    const fNum = new Intl.NumberFormat("es-AR");
 
-    const formatoNumero = new Intl.NumberFormat("es-AR");
-
-    // ---------- OUTPUT ----------
-    const texto =
-`• Inflación (Mes de ${mesNombre}): ${formatoDecimal.format(ultimaInflacion.valor)}%
-• Dólar Blue (Venta): $${formatoNumero.format(ultimoBlue.venta)} ARS
-• Dólar Blue (Compra): $${formatoNumero.format(ultimoBlue.compra)} ARS
+    document.getElementById("output").innerText =
+`• Inflación (Mes de ${mesNombre}): ${fDec.format(ultima.valor)}%
+• Dólar Blue (Venta): $${fNum.format(ultimoBlue.venta)} ARS
+• Dólar Blue (Compra): $${fNum.format(ultimoBlue.compra)} ARS
 • RIPTE: ${ripteTexto}`;
 
-    document.getElementById("output").innerText = texto;
-
-  } catch (error) {
-    console.error(error);
+  } catch {
     document.getElementById("output").innerText = "Error cargando datos";
   }
 }
 
 // =========================
-// 📅 PARSE FECHA DDMMYYYY
+// 📅 AUTOFORMATO FECHA
 // =========================
-function parseFecha(texto) {
-  if (texto.length !== 8) throw "Formato inválido";
+function formatearFechaInput(input) {
+  input.addEventListener("input", () => {
+    let v = input.value.replace(/\D/g, "");
 
-  const d = texto.slice(0,2);
-  const m = texto.slice(2,4);
-  const y = texto.slice(4,8);
+    if (v.length > 2) v = v.slice(0,2) + "-" + v.slice(2);
+    if (v.length > 5) v = v.slice(0,5) + "-" + v.slice(5,9);
 
+    input.value = v;
+  });
+}
+
+formatearFechaInput(document.getElementById("fechaDesde"));
+formatearFechaInput(document.getElementById("fechaHasta"));
+
+// =========================
+// 📅 PARSE FECHA
+// =========================
+function parseFecha(txt) {
+  const limpio = txt.replace(/-/g,"");
+  const d = limpio.slice(0,2);
+  const m = limpio.slice(2,4);
+  const y = limpio.slice(4,8);
   return new Date(`${y}-${m}-${d}`);
 }
 
 // =========================
-// 📊 ÍNDICE ACUMULADO
+// 📊 PRORRATEO DIARIO
 // =========================
-function obtenerIndiceHasta(fecha) {
+function factorEntreFechas(desde, hasta) {
   let factor = 1;
 
   for (let item of inflacionData) {
     const f = new Date(item.fecha);
+    const year = f.getFullYear();
+    const month = f.getMonth();
 
-    if (f <= fecha) {
-      factor *= (1 + item.valor / 100);
+    const inicioMes = new Date(year, month, 1);
+    const finMes = new Date(year, month + 1, 0);
+
+    // intersección del rango
+    const inicio = new Date(Math.max(inicioMes, desde));
+    const fin = new Date(Math.min(finMes, hasta));
+
+    if (inicio <= fin) {
+      const diasMes = finMes.getDate();
+      const diasTomados = Math.floor((fin - inicio)/(1000*60*60*24)) + 1;
+
+      const inflacionMensual = item.valor / 100;
+
+      // prorrateo exponencial correcto
+      const inflacionPeriodo = Math.pow(1 + inflacionMensual, diasTomados / diasMes);
+
+      factor *= inflacionPeriodo;
     }
   }
 
@@ -137,20 +163,15 @@ function calcular() {
     const desde = parseFecha(document.getElementById("fechaDesde").value);
     const hasta = parseFecha(document.getElementById("fechaHasta").value);
 
-    const indiceDesde = obtenerIndiceHasta(desde);
-    const indiceHasta = obtenerIndiceHasta(hasta);
+    const factor = factorEntreFechas(desde, hasta);
+    const resultado = monto * factor;
 
-    const resultado = monto * (indiceHasta / indiceDesde);
-
-    const formato = new Intl.NumberFormat("es-AR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
+    const f = new Intl.NumberFormat("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
 
     document.getElementById("resultado").innerText =
-      `$${formato.format(resultado)} ARS`;
+      `$${f.format(resultado)} ARS`;
 
-  } catch (e) {
+  } catch {
     document.getElementById("resultado").innerText = "Error en los datos";
   }
 }
