@@ -14,56 +14,28 @@
     flex-direction: column;
     align-items: center;
     gap: 0px;
-    padding: 15px;
+    padding: 20px;
     font-size: 16px;
-    margin: 0;
   }
-  
-  /* Contenedor principal para control de ancho */
-  .main-container {
-    width: 100%;
-    max-width: 425px; /* Límite en escritorio */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
   input { 
-    height: 30px; /* Un poco más alto para móviles */
+    height: 21px; 
     box-sizing: border-box; 
-    font-size: 14px; 
+    font-size: 12px; 
     background-color: #1a1a4d; 
     color: white; 
     border: 1px solid #333399;
     border-radius: 4px;
-    padding: 0 8px;
+    padding: 0 5px;
   }
   input::placeholder { color: #6666cc; }
-  
-  h1 { 
-    text-decoration: underline; 
-    font-size: 18px; 
-    padding: 0; 
-    margin: 15px 0 8px 0; 
-    color: white; 
-    text-align: center;
-    width: 100%;
-  }
+  h1 { text-decoration: underline; font-size: 20px; padding: 0; margin: 4px; color: white; }
   
   label { 
-    margin-bottom: 4px; 
+    margin-bottom: 2px; 
     display: block;
-    font-size: 13px;
   }
 
-  pre { 
-    padding: 0; 
-    margin: 3px; 
-    color: white; 
-    white-space: pre-wrap; /* Para que no se corte el texto en móviles */
-    word-break: break-word;
-    width: 100%;
-  }
+  pre { padding: 0; margin: 3px; color: white; }
   
   button { 
     cursor: pointer; 
@@ -73,10 +45,7 @@
     border-radius: 4px; 
     box-sizing: border-box; 
     width: 100%; 
-    margin-top: 10px;
-    height: 35px;
-    font-size: 14px;
-    font-weight: bold;
+    margin-top: 6px;
   }
   button:hover { background-color: #262673; }
   
@@ -84,6 +53,7 @@
     color: gray;
     white-space: nowrap;
     font-size: 11px;
+    flex-shrink: 0;
     margin-left: 8px;
   }
 
@@ -91,6 +61,7 @@
     width: 16px;
     height: 10px;
     vertical-align: middle;
+    margin: 0 0px;
     border: 0.5px solid #555;
   }
 
@@ -101,136 +72,132 @@
     align-items:center; 
     border:1px solid #333399; 
     border-radius:4px; 
-    padding:0 8px; 
+    padding:0 6px; 
     background:#1a1a4d; 
     width:100%; 
     box-sizing:border-box;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
-  .section-box {
-    width: 100%;
-    margin-bottom: 10px;
+  #resultado, #resultadoDolar, #resultadoPesosADolar, #resultadoDolarAPesos, #lineaEfectivo, #lineaCuotas, #errorCuotas {
+    color: #ff66cc;
+  }
+
+  .font-error { font-size: 14px !important; }
+  .font-valid { font-size: 10px !important; }
+
+  .ganador { 
+    color: #00ff00 !important; 
+    text-shadow: 0 0 5px #006600;
   }
 
   #containerPesosADolar, #containerDolarAPesos, #containerCuotas {
     margin-bottom: 0px !important;
-    width: 100%;
-  }
-
-  .ganador { color: #00ff00 !important; font-weight: bold; }
-  
-  #resultado, #resultadoDolar {
-    margin: 8px 0;
-    font-size: 16px;
-    font-weight: bold;
-    text-align: center;
   }
 </style>
 </head>
 
 <body>
 
-<div class="main-container">
+<h1>Data General</h1>
+<pre id="output"></pre>
 
-  <h1>Data General</h1>
-  <pre id="output"></pre>
-
-  <h1>Calculadora de Inflación (Pesos)</h1>
-  <div class="section-box">
-    <label>Monto en Pesos Argentinos <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/ar.svg">)</span>:</label>
-    <div class="input-container">
-      <input id="monto" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
-      <span style="color:#6666cc; font-style:italic; font-size:12px;">ARS</span>
-    </div>
-    <label>Fecha de Origen <span style="color:gray;">(DDMMYYYY)</span>:</label>
-    <div style="display:flex; align-items:center; margin-bottom:6px;">
-      <input id="fechaDesde" placeholder="01-01-2000" maxlength="8" style="flex:1;">
-      <span id="previewDesdePesos" class="preview-fecha" style="display: none;"></span>
-    </div>
-    <label>Fecha de Destino <span style="color:gray;">(DDMMYYYY)</span>:</label>
-    <div style="display:flex; align-items:center;">
-      <input id="fechaHasta" placeholder="01-01-2020" maxlength="8" style="flex:1;">
-      <span id="previewHastaPesos" class="preview-fecha" style="display: none;"></span>
-    </div>
-    <button onclick="calcular()">Calcular</button>
+<h1>Calculadora de Inflación (en Pesos)</h1>
+<div style="width:425px; max-width:100%; margin:4px;">
+  <label>Monto en Pesos Argentinos <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/ar.svg">)</span>:</label>
+  <div class="input-container">
+    <input id="monto" placeholder="0" style="flex:1; border:none; outline:none; background:transparent; padding: 5px">
+    <span style="color:#6666cc; font-style:italic; font-size:12px;">ARS</span>
   </div>
-  <div id="resultado"></div>
-
-  <h1>Calculadora de Inflación (Dólares)</h1>
-  <div class="section-box">
-    <label>Monto en Dólares <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/us.svg">)</span>:</label>
-    <div class="input-container">
-      <input id="montoDolar" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
-      <span style="color:#6666cc; font-style:italic; font-size:12px;">USD</span>
-    </div>
-    <label>Fecha de Origen <span style="color:gray;">(DDMMYYYY)</span>:</label>
-    <div style="display:flex; align-items:center; margin-bottom:6px;">
-      <input id="fechaDesdeDolar" placeholder="01-01-2000" maxlength="8" style="flex:1;">
-      <span id="previewDesdeDolar" class="preview-fecha" style="display: none;"></span>
-    </div>
-    <label>Fecha de Destino <span style="color:gray;">(DDMMYYYY)</span>:</label>
-    <div style="display:flex; align-items:center;">
-      <input id="fechaHastaDolar" placeholder="01-01-2020" maxlength="8" style="flex:1;">
-      <span id="previewHastaDolar" class="preview-fecha" style="display: none;"></span>
-    </div>
-    <button onclick="calcularDolar()">Calcular</button>
+  <label>Fecha de Origen <span style="color:gray;">(DDMMYYYY)</span>:</label>
+  <div style="display:flex; align-items:center; margin-bottom:4px;">
+    <input id="fechaDesde" placeholder="01-01-2000" maxlength="8" style="flex:1; padding: 10px">
+    <span id="previewDesdePesos" class="preview-fecha" style="display: none"></span>
   </div>
-  <div id="resultadoDolar"></div>
-
-  <h1>Calculadora de Pesos / Dólares</h1>
-  <div class="section-box">
-    <label>De Pesos a Dólares <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/ar.svg"> a <img class="flag" src="https://flagcdn.com/us.svg">)</span>:</label>
-    <div class="input-container">
-      <input id="montoPesosADolar" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
-      <span style="color:#6666cc; font-style:italic; font-size:12px;">ARS</span>
-    </div>
-    <button onclick="calcularPesosADolar()">Calcular</button>
+  <label>Fecha de Destino <span style="color:gray;">(DDMMYYYY)</span>:</label>
+  <div style="display:flex; align-items:center;">
+    <input id="fechaHasta" placeholder="01-01-2020" maxlength="8" style="flex:1; padding: 10px">
+    <span id="previewHastaPesos" class="preview-fecha" style="display: none;"></span>
   </div>
-  <div id="containerPesosADolar" style="display:none;"><pre style="font-size:11px;" id="resultadoPesosADolar"></pre></div>
+  <button onclick="calcular()">Calcular</button>
+</div>
+<div id="resultado" style="margin:4px; font-size:14px; text-align:center;"></div>
 
-  <div class="section-box">
-    <label>De Dólares a Pesos <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/us.svg"> a <img class="flag" src="https://flagcdn.com/ar.svg">)</span>:</label>
-    <div class="input-container">
-      <input id="montoDolarAPesos" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
-      <span style="color:#6666cc; font-style:italic; font-size:12px;">USD</span>
-    </div>
-    <button onclick="calcularDolarAPesos()">Calcular</button>
+<h1>Calculadora de Inflación (en Dólares)</h1>
+<div style="width:425px; max-width:100%; margin:4px;">
+  <label>Monto en Dólares <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/us.svg">)</span>:</label>
+  <div class="input-container">
+    <input id="montoDolar" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
+    <span style="color:#6666cc; font-style:italic; font-size:12px;">USD</span>
   </div>
-  <div id="containerDolarAPesos" style="display:none;"><pre style="font-size:11px;" id="resultadoDolarAPesos"></pre></div>
+  <label>Fecha de Origen <span style="color:gray;">(DDMMYYYY)</span>:</label>
+  <div style="display:flex; align-items:center; margin-bottom:4px;">
+    <input id="fechaDesdeDolar" placeholder="01-01-2000" maxlength="8" style="flex:1; padding: 10px">
+    <span id="previewDesdeDolar" class="preview-fecha" style="display: none;"></span>
+  </div>
+  <label>Fecha de Destino <span style="color:gray;">(DDMMYYYY)</span>:</label>
+  <div style="display:flex; align-items:center;">
+    <input id="fechaHastaDolar" placeholder="01-01-2020" maxlength="8" style="flex:1; padding: 10px">
+    <span id="previewHastaDolar" class="preview-fecha" style="display: none;"></span>
+  </div>
+  <button onclick="calcularDolar()">Calcular</button>
+</div>
+<div id="resultadoDolar" style="margin:4px; font-size:14px; text-align:center;"></div>
 
-  <h1>Efectivo VS Cuotas</h1>
-  <div class="section-box">
-    <label>Monto de Efectivo <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/ar.svg">)</span>:</label>
-    <div class="input-container">
-      <input id="montoCuotas" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
-      <span style="color:#6666cc; font-style:italic; font-size:12px;">ARS</span>
-    </div>
-    <label>Descuento en Efectivo (%):</label>
-    <div class="input-container">
-      <input id="descEfectivo" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
-      <span style="color:#6666cc; font-style:italic; font-size:12px;">%</span>
-    </div>
-    <label>Cantidad de cuotas sin interés:</label>
-    <div class="input-container">
-      <input id="cantCuotas" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
-      <span style="color:#6666cc; font-style:italic; font-size:12px;">Cuotas</span>
-    </div>
-    <button onclick="calcularCuotas()">Calcular</button>
+<h1>Calculadora de Pesos / Dólares</h1>
+<div style="width:425px; max-width:100%; margin:4px;">
+  <label>Transformación de Pesos a Dólares <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/ar.svg"> a <img class="flag" src="https://flagcdn.com/us.svg">)</span>:</label>
+  <div class="input-container">
+    <input id="montoPesosADolar" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
+    <span style="color:#6666cc; font-style:italic; font-size:12px;">ARS</span>
   </div>
-  <div id="containerCuotas" style="display:none;">
-      <pre id="lineaEfectivo" style="font-size:11px; margin:0;"></pre>
-      <pre id="lineaCuotas" style="font-size:11px; margin:0;"></pre>
-  </div>
+  <button onclick="calcularPesosADolar()">Calcular</button>
+</div>
+<div id="containerPesosADolar" style="display:none; margin:4px;"><pre id="resultadoPesosADolar"></pre></div>
 
+<div style="width:425px; max-width:100%; margin:4px;">
+  <label>Transformación de Dólares a Pesos <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/us.svg"> a <img class="flag" src="https://flagcdn.com/ar.svg">)</span>:</label>
+  <div class="input-container">
+    <input id="montoDolarAPesos" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
+    <span style="color:#6666cc; font-style:italic; font-size:12px;">USD</span>
+  </div>
+  <button onclick="calcularDolarAPesos()">Calcular</button>
+</div>
+<div id="containerDolarAPesos" style="display:none; margin:4px;"><pre id="resultadoDolarAPesos"></pre></div>
+
+<h1>Calculadora de Efectivo VS Cuotas</h1>
+<div style="width:425px; max-width:100%; margin:4px;">
+  <label>Monto de Efectivo <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/ar.svg">)</span>:</label>
+  <div class="input-container">
+    <input id="montoCuotas" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
+    <span style="color:#6666cc; font-style:italic; font-size:12px;">ARS</span>
+  </div>
+  <label>Descuento en Efectivo:</label>
+  <div class="input-container">
+    <input id="descEfectivo" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
+    <span style="color:#6666cc; font-style:italic; font-size:12px;">%</span>
+  </div>
+  <label>Cantidad de cuotas sin interés:</label>
+  <div class="input-container">
+    <input id="cantCuotas" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
+    <span style="color:#6666cc; font-style:italic; font-size:12px;">Cuotas</span>
+  </div>
+  <button onclick="calcularCuotas()">Calcular</button>
+</div>
+<div id="containerCuotas" style="display:none; margin:4px; text-align: center;">
+    <div id="errorCuotas" style="display:none; font-size:14px;">???</div>
+    <div id="wrapperLineas">
+        <pre id="lineaEfectivo" style="text-align:left; font-size:10px; margin:0;"></pre>
+        <pre id="lineaCuotas" style="text-align:left; font-size:10px; margin:0;"></pre>
+    </div>
 </div>
 
 <script>
 let inflacionData = [];
 let blueVenta = null, blueCompra = null;
 let cpiData = [];
-let ultimaInfVal = 0;
-let tnaSupuestaM = 0;
+let minFechaInf = null, minFechaCpi = null;
+let tnaSupuestaM = 0; 
 const mesesArr = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
 const fGral = new Intl.NumberFormat("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -240,10 +207,10 @@ async function cargarTodo() {
   try {
     const resInf = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
     inflacionData = await resInf.json();
-    const ultima = inflacionData[inflacionData.length - 1];
-    ultimaInfVal = ultima.valor;
-    const fecha = new Date(ultima.fecha);
+    if(inflacionData.length) minFechaInf = new Date(inflacionData[0].fecha);
     
+    const ultima = inflacionData[inflacionData.length - 1];
+    const fecha = new Date(ultima.fecha);
     const infMensual = ultima.valor / 100;
     const tnaD = 365 * (Math.pow((1 + infMensual), (12 / 365)) - 1) * 100;
     const tnaM = (12 * infMensual) * 100;
@@ -266,13 +233,14 @@ async function cargarTodo() {
     try {
       const resCpi = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/cpi");
       cpiData = (await resCpi.json()).filter(o => o.valor !== ".");
+      if(cpiData.length) minFechaCpi = new Date(cpiData[0].fecha);
     } catch {}
 
     document.getElementById("output").innerText = 
-`• Inflación (${mesesArr[fecha.getMonth()]}): ${ultima.valor.toFixed(1).replace('.',',')}%
-• TNA Diaria (Última Inf.): ${fGral.format(tnaD)}%
-• TNA Diaria (Supuesta Pag.): ${fGral.format(tnaSupuestaD)}%
-• TNA Mensual (Última Inf.): ${fGral.format(tnaM)}%
+`• Inflación (Mes de ${mesesArr[fecha.getMonth()]}): ${ultima.valor.toFixed(1).replace('.',',')}%
+• TNA Diaria (Última Inflación): ${fGral.format(tnaD)}%
+• TNA Diaria (Supuesta Pagada): ${fGral.format(tnaSupuestaD)}%
+• TNA Mensual (Última Inflación): ${fGral.format(tnaM)}%
 • Dólar Blue (Venta): $${fNum.format(uBlue.venta)} ARS
 • Dólar Blue (Intermedio): $${fNum.format((uBlue.venta + uBlue.compra) / 2)} ARS
 • Dólar Blue (Compra): $${fNum.format(uBlue.compra)} ARS
@@ -291,27 +259,56 @@ function formatInputComa(e) {
 
 [monto, montoDolar, montoCuotas, descEfectivo, cantCuotas, montoPesosADolar, montoDolarAPesos].forEach(i => i.addEventListener("input", formatInputComa));
 
-function generarPreview(txt) {
+function generarPreview(txt, minFecha) {
   if (txt.length < 2) return "";
-  const d = parseInt(txt.slice(0,2)), m = parseInt(txt.slice(2,4));
-  if (m < 1 || m > 12) return "¡Error!";
-  let res = `${d}/${m}`;
-  if (txt.length === 8) res += `/${txt.slice(4,8)}`;
+  const d = parseInt(txt.slice(0,2));
+  if (d < 1 || d > 31) return "¡Fecha Inválida!";
+  
+  if (txt.length < 4) return `${d}`;
+  
+  const m = parseInt(txt.slice(2,4));
+  if (m < 1 || m > 12) return "¡Fecha Inválida!";
+  
+  let res = `${d} de ${mesesArr[m-1]}`;
+  
+  if (txt.length === 8) {
+    const y = parseInt(txt.slice(4,8));
+    const fechaIngresada = new Date(y, m-1, d);
+    const ahora = new Date();
+    
+    if (fechaIngresada > ahora) return "¡Fecha Inválida! (Fecha futura incierta)";
+    if (minFecha && fechaIngresada < minFecha) {
+        const diaMin = minFecha.getDate().toString().padStart(2, '0');
+        const mesMin = (minFecha.getMonth() + 1).toString().padStart(2, '0');
+        const anioMin = minFecha.getFullYear();
+        return `¡Fecha Inválida! (Fecha mínima ${diaMin}-${mesMin}-${anioMin})`;
+    }
+    res += ` de ${y}`;
+  }
   return res;
 }
 
+function esFechaInvalida(txt, minFecha) {
+    if (txt.length < 8) return true;
+    const d = parseInt(txt.slice(0,2)), m = parseInt(txt.slice(2,4)), y = parseInt(txt.slice(4,8));
+    const f = new Date(y, m-1, d);
+    const ahora = new Date();
+    if (isNaN(f.getTime()) || f > ahora) return true;
+    if (minFecha && f < minFecha) return true;
+    return false;
+}
+
 function actualizarPreviews() {
-  const pDP = generarPreview(fechaDesde.value);
-  document.getElementById("previewDesdePesos").innerText = pDP;
+  const pDP = generarPreview(fechaDesde.value, minFechaInf), pHP = generarPreview(fechaHasta.value, minFechaInf);
+  document.getElementById("previewDesdePesos").innerText = pDP || "";
   document.getElementById("previewDesdePesos").style.display = pDP ? "inline" : "none";
-  const pHP = generarPreview(fechaHasta.value);
-  document.getElementById("previewHastaPesos").innerText = pHP;
+  document.getElementById("previewHastaPesos").innerText = pHP || "";
   document.getElementById("previewHastaPesos").style.display = pHP ? "inline" : "none";
-  const pDD = generarPreview(fechaDesdeDolar.value);
-  document.getElementById("previewDesdeDolar").innerText = pDD;
+
+  const pDD = generarPreview(fechaDesdeDolar.value, minFechaCpi), pHD = generarPreview(fechaHastaDolar.value, minFechaCpi);
+  document.getElementById("previewDesdeDolar").innerText = pDD || "";
   document.getElementById("previewDesdeDolar").style.display = pDD ? "inline" : "none";
-  const pHD = generarPreview(fechaHastaDolar.value);
-  document.getElementById("previewHastaDolar").innerText = pHD;
+  document.getElementById("previewHastaDolar").innerText = pHD || "";
   document.getElementById("previewHastaDolar").style.display = pHD ? "inline" : "none";
 }
 
@@ -333,7 +330,7 @@ function getFactor(data, d, h) {
 function calcular() {
   const v = parseLocal(monto.value);
   const el = document.getElementById("resultado");
-  if (!monto.value || !v || fechaDesde.value.length < 8 || fechaHasta.value.length < 8) {
+  if (!monto.value || v === 0 || esFechaInvalida(fechaDesde.value, minFechaInf) || esFechaInvalida(fechaHasta.value, minFechaInf) || inflacionData.length === 0) {
     el.innerText = "???"; return;
   }
   const f1 = new Date(fechaDesde.value.slice(4), fechaDesde.value.slice(2,4)-1, fechaDesde.value.slice(0,2));
@@ -345,7 +342,7 @@ function calcular() {
 function calcularDolar() {
   const v = parseLocal(montoDolar.value);
   const el = document.getElementById("resultadoDolar");
-  if (!montoDolar.value || !v || fechaDesdeDolar.value.length < 8 || fechaHastaDolar.value.length < 8) {
+  if (!montoDolar.value || v === 0 || esFechaInvalida(fechaDesdeDolar.value, minFechaCpi) || esFechaInvalida(fechaHastaDolar.value, minFechaCpi) || cpiData.length === 0) {
     el.innerText = "???"; return;
   }
   const f1 = new Date(fechaDesdeDolar.value.slice(4), fechaDesdeDolar.value.slice(2,4)-1, fechaDesdeDolar.value.slice(0,2));
@@ -357,59 +354,69 @@ function calcularDolar() {
 function calcularPesosADolar() {
   const v = parseLocal(montoPesosADolar.value);
   const el = document.getElementById("resultadoPesosADolar");
-  if (!montoPesosADolar.value || !v || !blueVenta) { el.innerText = "???"; return; }
+  const cont = document.getElementById("containerPesosADolar");
+  cont.style.display = "block";
+  if (!montoPesosADolar.value || v === 0 || !blueVenta) {
+    el.innerText = "???"; el.className = "font-error"; return;
+  }
+  el.className = "font-valid";
   const i = (blueVenta + blueCompra) / 2;
   el.innerText = 
-`• ${fNum.format(v)} ARS = ${fGral.format(v/blueVenta)} USD (Venta)
-• ${fNum.format(v)} ARS = ${fGral.format(v/i)} USD (Interm.)
-• ${fNum.format(v)} ARS = ${fGral.format(v/blueCompra)} USD (Compra)`;
-  document.getElementById("containerPesosADolar").style.display = "block";
+`• ${fNum.format(v)} ARS son ${fGral.format(v/blueVenta)} USD tomando el valor de Dólar Blue (Venta)
+• ${fNum.format(v)} ARS son ${fGral.format(v/i)} USD tomando el valor de Dólar Blue (Intermedio)
+• ${fNum.format(v)} ARS son ${fGral.format(v/blueCompra)} USD tomando el valor de Dólar Blue (Compra)`;
 }
 
 function calcularDolarAPesos() {
   const v = parseLocal(montoDolarAPesos.value);
   const el = document.getElementById("resultadoDolarAPesos");
-  if (!montoDolarAPesos.value || !v || !blueVenta) { el.innerText = "???"; return; }
+  const cont = document.getElementById("containerDolarAPesos");
+  cont.style.display = "block";
+  if (!montoDolarAPesos.value || v === 0 || !blueVenta) {
+    el.innerText = "???"; el.className = "font-error"; return;
+  }
+  el.className = "font-valid";
   const i = (blueVenta + blueCompra) / 2;
   el.innerText = 
-`• ${fNum.format(v)} USD = ${fGral.format(v*blueVenta)} ARS (Venta)
-• ${fNum.format(v)} USD = ${fGral.format(v*i)} ARS (Interm.)
-• ${fNum.format(v)} USD = ${fGral.format(v*blueCompra)} ARS (Compra)`;
-  document.getElementById("containerDolarAPesos").style.display = "block";
+`• ${fNum.format(v)} USD son ${fGral.format(v*blueVenta)} ARS tomando el valor de Dólar Blue (Venta)
+• ${fNum.format(v)} USD son ${fGral.format(v*i)} ARS tomando el valor de Dólar Blue (Intermedio)
+• ${fNum.format(v)} USD son ${fGral.format(v*blueCompra)} ARS tomando el valor de Dólar Blue (Compra)`;
 }
 
 function calcularCuotas() {
   const elEfe = document.getElementById("lineaEfectivo");
   const elCuo = document.getElementById("lineaCuotas");
+  const err = document.getElementById("errorCuotas");
+  const wrap = document.getElementById("wrapperLineas");
   const container = document.getElementById("containerCuotas");
 
-  if (!montoCuotas.value.trim()) {
-    elEfe.innerText = "???";
-    elCuo.innerText = "???";
-    elEfe.classList.remove("ganador");
-    elCuo.classList.remove("ganador");
-    container.style.display = "block";
+  const m = parseLocal(montoCuotas.value);
+  container.style.display = "block";
+
+  if (!montoCuotas.value.trim() || m === 0) {
+    err.style.display = "block";
+    wrap.style.display = "none";
     return;
   }
 
-  const m = parseLocal(montoCuotas.value);
+  err.style.display = "none";
+  wrap.style.display = "block";
+
   const d = descEfectivo.value === "" ? 0 : parseLocal(descEfectivo.value);
   let c = cantCuotas.value === "" ? 0 : parseInt(cantCuotas.value.replace(/\./g, ""));
-  
   const montoDesc = m * (1 - d/100);
   let valorPresenteTotal = 0;
   
-  if (c <= 0) {
-    valorPresenteTotal = m;
-  } else {
+  if (c <= 0) { valorPresenteTotal = m; } 
+  else {
     const valorCuota = m / c;
     for (let i = 1; i <= c; i++) {
       valorPresenteTotal += valorCuota / Math.pow(1 + tnaSupuestaM, i);
     }
   }
 
-  elEfe.innerText = `• Efectivo: ${fGral.format(montoDesc)} ARS`;
-  elCuo.innerText = `• Cuotas: ${fGral.format(valorPresenteTotal)} ARS`;
+  elEfe.innerText = `• ${fNum.format(m)} ARS con ${d}% de descuento equivale a ${fGral.format(montoDesc)} ARS`;
+  elCuo.innerText = `• ${fNum.format(m)} ARS con ${c} cuotas sin interés equivalen a ${fGral.format(valorPresenteTotal)} ARS`;
 
   elEfe.classList.remove("ganador"); 
   elCuo.classList.remove("ganador");
@@ -422,7 +429,6 @@ function calcularCuotas() {
   } else {
     elCuo.classList.add("ganador");
   }
-  container.style.display = "block";
 }
 
 cargarTodo();
