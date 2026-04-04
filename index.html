@@ -45,7 +45,7 @@
     white-space: pre-wrap; 
     word-wrap: break-word;
     text-align: left; 
-    width: 100%; /* Asegura que ocupe el ancho disponible para alinear el texto */
+    width: 100%; 
     max-width: 425px;
   }
   
@@ -188,7 +188,7 @@
 
 <h1>Calculadora de Efectivo VS Cuotas</h1>
 <div style="width:425px; max-width:100%; margin:4px;">
-  <label>Monto de Efectivo <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/ar.svg">)</span>:</label>
+  <label>Monto en Efectivo <span class="parentesis-gris">(<img class="flag" src="https://flagcdn.com/ar.svg">)</span>:</label>
   <div class="input-container">
     <input id="montoCuotas" inputmode="decimal" placeholder="0" style="flex:1; border:none; outline:none; background:transparent;">
     <span style="color:#6666cc; font-style:italic; font-size:12px;">ARS</span>
@@ -214,10 +214,6 @@
 </div>
 
 <script>
-/**
- * Programado como Gemini Pro Abril 2026
- */
-
 let inflacionData = [];
 let blueVenta = null, blueCompra = null;
 let cpiData = [];
@@ -229,6 +225,8 @@ const fGral = new Intl.NumberFormat("es-AR", { minimumFractionDigits: 0, maximum
 const fNum = new Intl.NumberFormat("es-AR");
 
 async function cargarTodo() {
+  const outputEl = document.getElementById("output");
+  outputEl.innerText = "• Cargando ..."; //
   try {
     const resInf = await fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion");
     inflacionData = await resInf.json();
@@ -252,7 +250,7 @@ async function cargarTodo() {
     let ripteTexto = "No disponible";
     let ripteDolarTexto = "No disponible";
     try {
-      const r = await fetch("/api/ripte"); 
+      const r = await fetch("/api/ripte"); //
       const d = await r.json();
       if(d.ripte) {
         ripteTexto = `$${fGral.format(d.ripte)} ARS`;
@@ -261,7 +259,7 @@ async function cargarTodo() {
     } catch {}
 
     try {
-      const resCpi = await fetch("/api/cpi"); 
+      const resCpi = await fetch("/api/cpi"); //
       const dataCpi = await resCpi.json();
       cpiData = dataCpi.observations.filter(o => o.value !== ".").map(o => ({
           fecha: o.date,
@@ -270,7 +268,7 @@ async function cargarTodo() {
       if(cpiData.length) minFechaCpi = new Date(cpiData[0].fecha);
     } catch {}
 
-    document.getElementById("output").innerText = 
+    outputEl.innerText = 
 `• Inflación (Mes de ${mesesArr[fecha.getMonth()]}): ${ultima.valor.toFixed(1).replace('.',',')}%
 • TNA Diaria (Última Inflación): ${fGral.format(tnaD)}%
 • TNA Diaria (Supuesta Pagada): ${fGral.format(tnaSupuestaD)}%
@@ -280,7 +278,7 @@ async function cargarTodo() {
 • Dólar Blue (Compra): $${fNum.format(uBlue.compra)} ARS
 • RIPTE: ${ripteTexto}
 • RIPTE (En Dólares): ${ripteDolarTexto}`;
-  } catch { document.getElementById("output").innerText = "Error cargando datos"; }
+  } catch { outputEl.innerText = "Error cargando datos"; }
 }
 
 function formatInputComa(e) {
@@ -296,6 +294,7 @@ function setupEnterKey(inputElement, buttonId) {
     inputElement.addEventListener("keypress", (e) => {
         if (e.key === "Enter") {
             document.getElementById(buttonId).click();
+            document.activeElement.blur(); // Oculta el teclado móvil
         }
     });
 }
@@ -389,7 +388,8 @@ function calcular() {
   const f1 = new Date(fechaDesde.value.slice(4), fechaDesde.value.slice(2,4)-1, fechaDesde.value.slice(0,2));
   const f2 = new Date(fechaHasta.value.slice(4), fechaHasta.value.slice(2,4)-1, fechaHasta.value.slice(0,2));
   const fact = getFactor(inflacionData, f1, f2);
-  el.innerText = (fact === null || isNaN(fact)) ? "???" : `• $${fGral.format(v * fact)} ARS`;
+  const inflacionPerc = (fact - 1) * 100; //
+  el.innerText = (fact === null || isNaN(fact)) ? "???" : `• $${fGral.format(v * fact)} ARS\n• Entre estos períodos ocurrió un ${fGral.format(inflacionPerc)}% de inflación`; //
 }
 
 function calcularDolar() {
@@ -401,7 +401,8 @@ function calcularDolar() {
   const f1 = new Date(fechaDesdeDolar.value.slice(4), fechaDesdeDolar.value.slice(2,4)-1, fechaDesdeDolar.value.slice(0,2));
   const f2 = new Date(fechaHastaDolar.value.slice(4), fechaHastaDolar.value.slice(2,4)-1, fechaHastaDolar.value.slice(0,2));
   const fact = getFactor(cpiData, f1, f2, true);
-  el.innerText = (fact === null || isNaN(fact)) ? "???" : `• $${fGral.format(v * fact)} USD`;
+  const inflacionPerc = (fact - 1) * 100; //
+  el.innerText = (fact === null || isNaN(fact)) ? "???" : `• $${fGral.format(v * fact)} USD\n• Entre estos períodos ocurrió un ${fGral.format(inflacionPerc)}% de inflación`; //
 }
 
 function calcularPesosADolar() {
@@ -466,8 +467,11 @@ function calcularCuotas() {
     }
   }
 
+  const descEquiv = ((m - valorPresenteTotal) / m) * 100; //
+
   elEfe.innerText = `• ${fNum.format(m)} ARS con ${d}% de descuento equivalen a ${fGral.format(montoDesc)} ARS`;
-  elCuo.innerText = `• ${fNum.format(m)} ARS con ${c} cuotas sin interés equivalen a ${fGral.format(valorPresenteTotal)} ARS`;
+  elCuo.innerText = `• ${fNum.format(m)} ARS con ${c} cuotas sin interés equivalen a ${fGral.format(valorPresenteTotal)} ARS. Esto equivaldría a ${fGral.format(descEquiv)}% de descuento`; //
+  
   elEfe.classList.remove("ganador"); 
   elCuo.classList.remove("ganador");
   const diff = Math.abs(montoDesc - valorPresenteTotal);
