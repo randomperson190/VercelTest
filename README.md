@@ -17,3 +17,5 @@ Programado como Gemini Pro o Gemini Thinking, a veces Gemini Fast
 El de cuotas sin interés es calculado con respecto a que la inflación última continuaría siendo la misma extendida en el tiempo. Pero además se tiene en cuenta un pago de TNA Diario supuesto, proveniendo del valor de inflación actual a TNA diario - 10%. Digamos que la billetera virtual pagaría eso de rendimiento y uno la plata ya la tendría.
 
 Por lo cual gana con respecto a la moneda que se va desvalorizando y además respecto al rendimiento de la mejor billetera virtual adsequible.
+
+Además los cierres son considerados los días 25, y los vencimientos son considerados los días 10.
